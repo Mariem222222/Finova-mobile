@@ -1,0 +1,48 @@
+{
+  "name": "finova",
+  "license": "0BSD",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.0.2",
+    "@react-native-community/datetimepicker": "^8.3.0",
+    "@react-native-community/slider": "^4.5.6",
+    "@react-navigation/bottom-tabs": "^7.2.1",
+    "@react-navigation/native": "^7.0.15",
+    "@react-navigation/stack": "^7.1.2",
+    "axios": "^1.8.4",
+    "expo": "~52.0.37",
+    "expo-camera": "~16.0.17",
+    "expo-image-picker": "~16.0.6",
+    "expo-status-bar": "~2.0.1",
+    "react": "18.3.1",
+    "react-native": "0.76.7",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-echarts-wrapper": "^2.0.0",
+    "react-native-gesture-handler": "^2.24.0",
+    "react-native-image-picker": "^8.2.0",
+    "react-native-paper": "^5.13.1",
+    "react-native-reanimated": "^3.17.1",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-splash-screen": "^3.3.0",
+    "react-native-svg": "^7.2.1",
+    "react-native-swiper": "^1.6.0",
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-vision-camera": "^4.6.4",
+    "react-native-webview": "^13.13.4",
+    "victory-native": "^41.16.1",
+    "vision-camera-ocr": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "latest"
+  },
+  "private": true
+}

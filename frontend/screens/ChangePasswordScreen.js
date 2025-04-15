@@ -1,0 +1,116 @@
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+
+const ChangePasswordScreen = ({ navigation }) => {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleChangePassword = () => {
+    if (newPassword !== confirmPassword) {
+      setError("Both passwords must match.");
+      return;
+    }
+    console.log("Current Password:", currentPassword);
+    console.log("New Password:", newPassword);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+    navigation.goBack();
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Change Password</Text>
+
+      {/* Current Password Input */}
+      <Text style={styles.label}>Current Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Current Password"
+        secureTextEntry
+        placeholderTextColor="#888888"
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+      />
+
+      {/* New Password Input */}
+      <Text style={styles.label}>New Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="New Password"
+        secureTextEntry
+        value={newPassword}
+        placeholderTextColor="#888888"
+        onChangeText={setNewPassword}
+      />
+
+      {/* Confirm New Password Input */}
+      <Text style={styles.label}>Confirm Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm New Password"
+        secureTextEntry
+        placeholderTextColor="#888888"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
+      {/* Error Message */}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      {/* Change Password Button */}
+      <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
+        <Text style={styles.buttonText}>Change Password</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#161622",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 2,
+    marginTop:18,
+    color: "#A2A2A7",
+  },
+  input: {
+    borderBottomWidth: 1,
+    borderColor: "#333333",
+    padding: 15,
+    marginBottom: 20,
+    color: "#fff",
+  },
+  button: {
+    backgroundColor: "#0066FF",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  errorText: {
+    color: "#FF3F60",
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+});
+
+export default ChangePasswordScreen;
