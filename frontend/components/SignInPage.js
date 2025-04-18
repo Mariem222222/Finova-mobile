@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; 
+import { loginUser } from '../api/index';
 
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -28,29 +29,28 @@ const SignInScreen = ({ navigation }) => {
   };
 
   const handleSignIn = async() => {
-    // if (!validateForm()) {
-    //   Alert.alert("Validation Error", "Please fix the errors before submitting.");
-    //   return;
-    // }
+    if (!validateForm()) {
+      Alert.alert("Validation Error", "Please fix the errors before submitting.");
+      return;
+    }
 
-    // try {
-    //   const response = await loginUser({
-    //     email: email,
-    //     password: password
-    //   });
-      
-      // Store token/user data here (AsyncStorage/Redux)
+    try {
+      const response = await loginUser({
+        email: email,
+        password: password
+      });
+      console.log('LOGIN RESPONSE:', response);
       Alert.alert("Success", "Logged in successfully!");
-      navigation.replace("MainApp");
-    // } catch (err) {
-    //   Alert.alert("Error", err.response?.data?.error || 'Login failed');
-    // }
+      navigation.replace("TwoStepVerification",{email});
+    } catch (err) {
+      Alert.alert("Error", err.response?.data?.error || 'Login failed');
+    }
   };
 
   const handleNewUser = () => {
     navigation.navigate("SignUp");
   };
-
+try{
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
@@ -108,7 +108,10 @@ const SignInScreen = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-};
+}catch(err) {
+  console.error('Render error:', err);
+  return <Text style={{ color: 'red' }}>Something went wrong!</Text>;
+}}
 
 const styles = StyleSheet.create({
   container: {

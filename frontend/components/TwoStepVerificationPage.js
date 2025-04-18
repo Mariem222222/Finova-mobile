@@ -1,7 +1,9 @@
 import React, { useState, useEffect,useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 const CODE_LENGTH = 6;
-const TwoStepVerificationScreen = ({ navigation }) => {
+import { verifyTwoFACode } from "../api/index";
+const TwoStepVerificationScreen = ({ route,navigation }) => {
+  const {email}=route.params;
   const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
   const [resendDisabled, setResendDisabled] = useState(true);
   const inputRefs = useRef([]);
@@ -50,21 +52,19 @@ const TwoStepVerificationScreen = ({ navigation }) => {
 
 
     const handleSubmit = async () => {
-      // const verificationCode = code.join("");
-      // if (verificationCode.length === CODE_LENGTH) {
+      try{
+        const response = await verifyTwoFACode({ email: email, code: code.join("") });
+      console.log("Verification response:", response);
+      Alert.alert("success","Login Successful !");
         navigation.replace("MainApp");
-    //     } else {
-    //       Alert.alert("Error", data.message || "Invalid code.");
-    //     }
-    //   } catch (error) {
-    //     Alert.alert("Error", "An error occurred. Please try again.");
-    //   }
-    // } else {
-    //   Alert.alert("Invalid Code", "Please enter a valid six-digit code.");
-    // }
-  // };};
+    } 
+    catch (error) {
+      console.log("Verification Error:", error?.response?.data || error.message || error);
+      Alert.alert("Error", "An error occurred. Please try again.");
     }
-
+    
+    
+    };
 
     const handleResendCode = async () => {
       setResendDisabled(true);

@@ -20,7 +20,7 @@ const SignUpPage = ({ navigation }) => {
 
     if (!phoneNumber) {
       errors.phoneNumber = "Phone Number is required.";
-    } else if (!/^\d{10}$/.test(phoneNumber)) {
+    } else if (!/^\d{8}$/.test(phoneNumber)) {
       errors.phoneNumber = "Phone Number is invalid.";
     }
 
