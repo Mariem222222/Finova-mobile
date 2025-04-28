@@ -19,7 +19,7 @@ const TransactionHistoryScreen = () => {
         const response = await getTransactions();
         const formattedTransactions = response.transactions.map(tx => ({
           ...tx,
-          amount: tx.type === 'credit' ? tx.amount : -tx.amount,
+          amount: tx.type === "revenue" ? tx.amount : -tx.amount,
         }));
         setTransactions(formattedTransactions);
         setLoading(false);

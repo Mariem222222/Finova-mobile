@@ -5,6 +5,7 @@ const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 
 router.post('/', authMiddleware, async (req, res) => {
+  console.log('Received body:', req.body);
   try {
     const { amount, type, description, category } = req.body;
     if (!amount || !type || !description) {
@@ -13,14 +14,14 @@ router.post('/', authMiddleware, async (req, res) => {
     }
     const transaction = new Transaction({
       user: req.user.id,
-      amount,
-      type,
-      description,
-      category
+      amount:amount,
+      type:type,
+      description:description,
+      category:category,
     });
 
     const user = await User.findById(req.user.id);
-    user.balance += type === 'revenue' ? amount : -amount;
+    user.balance += type === "revenue" ? amount : -amount;
     await transaction.save();
     console.log(`Transaction saved with ID: ${transaction._id}`);
     user.transactions.push(transaction);

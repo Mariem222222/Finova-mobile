@@ -59,10 +59,8 @@ transactionsApi.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
-// Unified token getter with fallbacks
 async function getToken() {
   try {
-    // Option 1: AsyncStorage (standard React Native)
     const asyncStorage = require('@react-native-async-storage/async-storage').default;
     return await asyncStorage.getItem('token');
   } catch (error) {
@@ -78,13 +76,14 @@ export const getTransactions = async () => {
     throw error;
   }
 };
-// In your api/index.js file
-export const getUser = async () => {
-  const token = await AsyncStorage.getItem('token');
-  const response = await axios.get('/api/user', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return response.data;
+
+export const postTransactions = async (transactionData) => {
+  try {
+    const response = await transactionsApi.post('/transaction', transactionData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
 };
 
 

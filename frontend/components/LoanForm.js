@@ -1,21 +1,57 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
 import CustomSlider from "../helper/CustomSlider"
+import { postTransactions } from '../api/index';
 const LoanForm = ({ navigation }) => {
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [amount, setAmount] = useState(0);
-  const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
-
-  const handleSubmit = () => {
+ const [description, setDescription] = useState("");
+    const [category, setCategory] = useState("");
+    const [categoryError, setCategoryError] = useState("");
+    const [amount, setAmount] = useState(0);
+    const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+    const allowedCategories = [
+      'transfer',
+      'withdrawal',
+      'payment',
+    ];
+    const validateCategory = (input) => {
+      if (!allowedCategories.includes(input.toLowerCase())) {
+        setCategoryError('Invalid category. Allowed values: transfer, withdrawal');
+        return false;
+      }
+      setCategoryError('');
+      return true;
+    };
   
-    setIsSuccessPopupVisible(true); 
-  };
-
-  const closePopup = () => {
-    setIsSuccessPopupVisible(false);
-    navigation.goBack(); 
-  };
+    const handleSubmit = async () => {
+      setCategoryError('');
+      // Validate category
+      if (!validateCategory(category)) {
+        return;
+      }
+      if (!description || amount <= 0) {
+        alert("Please fill all required fields");
+        return;
+      }
+      try {
+        const transactionData = {
+          amount:Number(amount),
+          type:"loan",
+          description:description,
+          category: category
+        };
+        console.log(transactionData)
+        await postTransactions(transactionData);
+        setIsSuccessPopupVisible(true);  
+      } catch (error) {
+        console.error("Transaction error:", error);
+        alert(`Transaction failed: ${error.error || error.message}`);
+      }
+    };
+  
+    const closePopup = () => {
+      setIsSuccessPopupVisible(false);
+      navigation.goBack(); 
+    };
 
   return (
     <View style={styles.container}>
@@ -34,9 +70,12 @@ const LoanForm = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholderTextColor="#888888"
-        placeholder="Type the category of loan (e.g., car, home)"
+         placeholder="Valid categories: transfer, payment, withdrawal"
         value={category}
-        onChangeText={setCategory}
+        onChangeText={(text) => {
+          setCategory(text.toLowerCase());
+          validateCategory(text);
+        }}
       />
 
       {/* Amount Slider */}

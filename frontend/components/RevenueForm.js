@@ -1,14 +1,51 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
 import CustomSlider from "../helper/CustomSlider"
-const RevenueForm = ({ navigation }) => {
+import { postTransactions } from '../api/index'; 
+const RevenueForm = ({ navigation  }) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [categoryError, setCategoryError] = useState("");
   const [amount, setAmount] = useState(0);
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+  const allowedCategories = [
+    'transfer',
+    'deposit',
+  ];
+  const validateCategory = (input) => {
+    if (!allowedCategories.includes(input.toLowerCase())) {
+      setCategoryError('Invalid category. Allowed values: transfer, deposit,');
+      return false;
+    }
+    setCategoryError('');
+    return true;
+  };
 
-  const handleSubmit = () => {
-    setIsSuccessPopupVisible(true); 
+  const handleSubmit = async () => {
+    setCategoryError('');
+    // Validate category
+    if (!validateCategory(category)) {
+      return;
+    }
+    if (!description || amount <= 0) {
+      alert("Please fill all required fields");
+      return;
+    }
+    try {
+      const transactionData = {
+        amount:Number(amount),
+        type:"revenue",
+        description:description,
+        category: category
+      };
+      console.log(transactionData)
+      await postTransactions(transactionData);
+      setIsSuccessPopupVisible(true);  
+    } catch (error) {
+      console.error("Transaction error:", error);
+      alert(`Transaction failed: ${error.error || error.message}`);
+    }
+   
   };
 
   const closePopup = () => {
@@ -33,13 +70,16 @@ const RevenueForm = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholderTextColor="#888888"
-        placeholder="Type the category of revenue (e.g., salary, investment)"
+        placeholder="Valid categories: transfer, payment, deposit, withdrawal, purchase"
         value={category}
-        onChangeText={setCategory}
+        onChangeText={(text) => {
+          setCategory(text.toLowerCase());
+          validateCategory(text);
+        }}
       />
-
+      {categoryError ? <Text style={styles.errorText}>{categoryError}</Text> : null}
       {/* Amount Slider */}
-      <Text style={styles.amountText}>Amount: ${amount.toFixed(2)}</Text>
+      <Text style={styles.amountText}>Amount: ${amount}</Text>
       <View style={styles.amount_Container}>
       <CustomSlider
         minValue={0}
@@ -117,6 +157,15 @@ const styles = StyleSheet.create({
     amountText: {
       fontSize: 16,
       color: "#fff",
+    },
+    errorInput: {
+      borderColor: 'red',
+      backgroundColor: '#3A1E1E'
+    },
+    errorText: {
+      color: 'red',
+      fontSize: 12,
+      marginBottom: 10
     },
     amountLabels: {
       flexDirection: "row",

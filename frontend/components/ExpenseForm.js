@@ -1,22 +1,59 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
 import CustomSlider from "../helper/CustomSlider"
+import { postTransactions } from '../api/index';
 
 const ExpenseForm = ({ navigation }) => {
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [amount, setAmount] = useState(0);
-  const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
-
-  const handleSubmit = () => {
-    setIsSuccessPopupVisible(true);
-  };
-
-  const closePopup = () => {
-    setIsSuccessPopupVisible(false);
-    navigation.goBack();
-  };
-
+ const [description, setDescription] = useState("");
+   const [category, setCategory] = useState("");
+   const [categoryError, setCategoryError] = useState("");
+   const [amount, setAmount] = useState(0);
+   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+   const allowedCategories = [
+     'transfer',
+     'payment',
+     'withdrawal',
+     'purchase'
+   ];
+   const validateCategory = (input) => {
+     if (!allowedCategories.includes(input.toLowerCase())) {
+       setCategoryError('Invalid category. Allowed values: transfer, payment, withdrawal, purchase');
+       return false;
+     }
+     setCategoryError('');
+     return true;
+   };
+ 
+   const handleSubmit = async () => {
+     setCategoryError('');
+     // Validate category
+     if (!validateCategory(category)) {
+       return;
+     }
+     if (!description || amount <= 0) {
+       alert("Please fill all required fields");
+       return;
+     }
+     try {
+       const transactionData = {
+         amount:Number(amount),
+         type:"depense",
+         description:description,
+         category: category
+       };
+       console.log(transactionData)
+       await postTransactions(transactionData);
+       setIsSuccessPopupVisible(true);  
+     } catch (error) {
+       console.error("Transaction error:", error);
+       alert(`Transaction failed: ${error.error || error.message}`);
+     }
+   };
+ 
+   const closePopup = () => {
+     setIsSuccessPopupVisible(false);
+     navigation.goBack(); 
+   };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ajout du Nouveau Dépense</Text>
@@ -33,10 +70,13 @@ const ExpenseForm = ({ navigation }) => {
       {/* Category Input */}
       <TextInput
         style={styles.input}
-        placeholder="Type the category of depense (e.g., car, shipping, cash)"
+         placeholder="Valid categories: transfer, payment, deposit, withdrawal, purchase"
         value={category}
         placeholderTextColor="#888888"
-        onChangeText={setCategory}
+        onChangeText={(text) => {
+          setCategory(text.toLowerCase());
+          validateCategory(text);
+        }}
       />
 
      {/* Amount Slider */}

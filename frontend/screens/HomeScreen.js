@@ -5,6 +5,7 @@ import Profile from '../components/Profile';
 import { getTransactions } from '../api/index'; 
 import { useIsFocused } from '@react-navigation/native';
 
+
 const HomeScreen = () => {
   const [transactions, setTransactions] = useState([]);
   const [balance,setbalance]=useState(800);
@@ -23,7 +24,7 @@ const HomeScreen = () => {
           console.log(response)
           const formattedTransactions = response.transactions.map(tx => ({
             ...tx,
-            amount: tx.type === 'credit' ? tx.amount : -tx.amount,
+            amount: tx.type === 'revenue' ? tx.amount : -tx.amount,
           }));
           setName(response.name || 'Unknown'); 
           setbalance(response.balance || 'N/A');
@@ -33,7 +34,7 @@ const HomeScreen = () => {
         }
         setLoading(false);
       };
-      fetchTransactionsData();
+      fetchTransactionsData()
     }
   }, [isFocused]);
     const getImageByCategory = (category) => {
@@ -120,7 +121,7 @@ const HomeScreen = () => {
           {/* Manual Add Section */}
           <View style={styles.ajout_container}>
             <Text style={styles.ajoutText}>Ajout Manuelle des dépenses ou revenus</Text>
-            <TouchableOpacity style={styles.button_ajout} onPress={() => navigation.navigate('ManualEntry')}>
+            <TouchableOpacity style={styles.button_ajout}  onPress={() => navigation.navigate('ManualEntry', { refreshBalance: triggerRefresh })}>
               <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>
           </View>
