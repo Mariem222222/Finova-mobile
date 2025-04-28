@@ -24,16 +24,17 @@ async function authMiddleware(req, res, next) {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });
   }
-
   const token = authHeader.split(' ')[1];
-
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id);
-
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    req.user = user; // 👈 This is what your other routes rely on
+    if (!user) return res.status(404).json({ error: 'User not found' })
+      req.user = {
+        id: user._id,
+        name: user.name,
+        balance: user.balance,
+        email: user.email
+      }; 
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid or expired token' });
@@ -79,7 +80,84 @@ router.post('/login', async (req, res) => {
     to: user.email,
     subject: 'Your 2FA Code',
     text: `Your login verification code is: ${code}`,
-    html: `<p>Your login verification code is: <strong>${code}</strong></p>`
+    html: `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f7;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background-color: #4f46e5;
+        color: white;
+        padding: 24px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .content {
+        padding: 32px;
+        text-align: center;
+        color: #333333;
+      }
+
+      .code {
+        display: inline-block;
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 6px;
+        background-color: #f0f0ff;
+        color: #4f46e5;
+        padding: 12px 24px;
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+
+      .footer {
+        padding: 16px;
+        text-align: center;
+        font-size: 12px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        Verify Your Email
+      </div>
+      <div class="content">
+        <p>Finova Team</p>
+        <p>Use the following code to verify your email and complete your login:</p>
+        <div class="code"><strong>${code}</strong></div>
+        <p style="margin-top: 24px;">
+          This code will expire in 10 minutes. If you did not request this, you can safely ignore this email.
+        </p>
+      </div>
+      <div class="footer">
+        &copy; 2025 Your Company. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
+`
   });
 
   res.json({ message: '2FA code sent to email. Please verify.' });
@@ -106,11 +184,14 @@ router.post('/verify-2fa', async (req, res) => {
   user.twoFACode = undefined;
   user.twoFACodeExpires = undefined;
   await user.save();
+  const Name=user.name;
+  const Balance=user.balance;
 
   // Issue JWT
   const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
-  res.json({ message: 'Login successful!', token });
+  res.json({ message: 'Login successful!', token,Name,Balance });
 });
+
 
 // 🟢 Export both router and middleware
 module.exports = {

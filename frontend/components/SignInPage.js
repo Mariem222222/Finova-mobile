@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "reac
 import { Ionicons } from "@expo/vector-icons"; 
 import { loginUser } from '../api/index';
 
+
+
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,7 +14,7 @@ const SignInScreen = ({ navigation }) => {
   const validateForm = () => {
     const errors = {};
 
-    if (!email) {
+    if (!email.toLowerCase()) {
       errors.email = "Email is required.";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       errors.email = "Email is invalid.";
@@ -39,10 +41,11 @@ const SignInScreen = ({ navigation }) => {
         email: email,
         password: password
       });
-      console.log('LOGIN RESPONSE:', response);
+      console.log(response)
       Alert.alert("Success", "Logged in successfully!");
       navigation.replace("TwoStepVerification",{email});
     } catch (err) {
+      console.log(err)
       Alert.alert("Error", err.response?.data?.error || 'Login failed');
     }
   };

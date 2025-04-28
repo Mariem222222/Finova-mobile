@@ -63,5 +63,4 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
-
-export default Profile;
+export default Profile; 

@@ -2,15 +2,18 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { getTransactions } from '../api/index'; // Adjust import path
+import { getTransactions } from '../api/index'; 
+import { useIsFocused } from '@react-navigation/native';
 
 const TransactionHistoryScreen = () => {
   const navigation = useNavigation();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
+    if (isFocused) { 
     const fetchTransactionsData = async () => {
       try {
         const response = await getTransactions();
@@ -25,9 +28,9 @@ const TransactionHistoryScreen = () => {
         setLoading(false);
       }
     };
-
+  
     fetchTransactionsData();
-  }, []);
+  }} ,[isFocused]);
 
   const getImageByCategory = (category) => {
     switch (category) {
@@ -156,6 +159,9 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     marginRight: 20,
+  },
+  felxcontainer:{
+    flex:1,
   },
   textContainer: {
     marginLeft: 10,

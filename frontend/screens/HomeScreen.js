@@ -1,58 +1,97 @@
-import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import React, { useState,useEffect } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView,ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Profile from '../components/Profile';
+import { getTransactions } from '../api/index'; 
+import { useIsFocused } from '@react-navigation/native';
 
 const HomeScreen = () => {
-  const [transactions, setTransactions] = useState([
-    { 
-      _id: '1', 
-      description: 'Gift Card', 
-      amount: -19.20, 
-      imageUrl: require("../assets/giftcard.png"), 
-      date: 'Today', 
-      category: 'Shopping' 
-    },
-    { 
-      _id: '2', 
-      description: 'Car Insurance', 
-      amount: -200, 
-      imageUrl: require("../assets/car.png"), 
-      date: 'Today', 
-      category: 'Car' 
-    },
-    { 
-      _id: '3', 
-      description: 'House', 
-      amount: -300, 
-      imageUrl: require("../assets/house.png"), 
-      date: 'Last 7 Days', 
-      category: 'Cash' 
-
-    },
-    { 
-      _id: '4', 
-      description: 'cash', 
-      amount: +300, 
-      imageUrl: require("../assets/revenue.png"), 
-      date: 'Last 7 Days', 
-      category: 'Cash' 
-    },
-  ]);
-  const [balance, setBalance] = useState(8545);
+  const [transactions, setTransactions] = useState([]);
+  const [balance,setbalance]=useState(800);
+  const [Name,setName]=useState("jawhar");
   const [plannedBudget, setPlannedBudget] = useState(4000);
   const [actualExpenses, setActualExpenses] = useState(150);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
-
+  const [loading, setLoading] = useState(true);
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (isFocused) { 
+      const fetchTransactionsData = async () => {
+        try {
+          const response = await getTransactions();
+          console.log(response)
+          const formattedTransactions = response.transactions.map(tx => ({
+            ...tx,
+            amount: tx.type === 'credit' ? tx.amount : -tx.amount,
+          }));
+          setName(response.name || 'Unknown'); 
+          setbalance(response.balance || 'N/A');
+          setTransactions(formattedTransactions);
+        } catch (err) {
+          setError(err.message);
+        }
+        setLoading(false);
+      };
+      fetchTransactionsData();
+    }
+  }, [isFocused]);
+    const getImageByCategory = (category) => {
+      switch (category) {
+        case 'Shopping':
+          return require("../assets/giftcard.png");
+        case 'Car':
+          return require("../assets/car.png");
+        case 'House':
+          return require("../assets/house.png");
+        default:
+          return require("../assets/revenue.png");
+      }
+    };
+     const formatDate = (dateString) => {
+        const transactionDate = new Date(dateString);
+        const today = new Date();
+        const diffTime = today - transactionDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+        if (diffDays === 0) {
+          return 'Today';
+        } else if (diffDays <= 7) {
+          return 'Last 7 Days';
+        } else {
+          return transactionDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+        }
+      };
+    
+      if (loading) {
+        return (
+          <View style={[styles.container, styles.center]}>
+            <ActivityIndicator size="large" color="#4ECDC4" />
+          </View>
+        );
+      }
+    
+      if (error) {
+        return (
+          <View style={[styles.container, styles.center]}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        );
+      }
+    
   return (
     <ScrollView style={styles.scrollContainer}>
       {/* Header Content */}
       <View>
         <TouchableOpacity onPress={() => navigation.navigate('profile')}>
-          <Profile name="Jawhar Soussia" profileImage={require("../assets/profile.jpg")} />
+          <Profile name={Name} profileImage={require("../assets/profile.jpg")} />
         </TouchableOpacity>
         <View style={styles.balance}>
-          <Text style={styles.balanceText}>${balance.toFixed(2)}</Text>
+          <Text style={styles.balanceText}>${balance}</Text>
           <Text style={styles.subText}>Current Balance</Text>
         </View>
         <View style={styles.first_container_scan}>
@@ -86,7 +125,6 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Transaction History Section */}
         <View style={styles.transactionHeader}>
           <Text style={styles.sectionTitle}>Transaction History</Text>
@@ -95,41 +133,40 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-       {transactions.length > 0 ? (
-              transactions.map((transaction, index) => (
-                <View key={index} style={styles.transactionItem}>
-                  <Text style={styles.transactionDate}>{transaction.date}</Text>
-                  <View style={styles.transactionDetails}>
-                  <Image source={typeof transaction.imageUrl === 'string' ? { uri: transaction.imageUrl } : transaction.imageUrl}
-                    style={styles.transactionImage}/>
-                   
-                    <View styles={styles.textContainer}>
-                    <Text style={styles.transactionDescription}>{transaction.description}</Text>
-                    <Text style={styles.transactionType}>{transaction.category}</Text>
-                    </View>
-                    <View style={styles.felxcontainer}></View>
-                    <View styles={styles.textContainer}>
-                    <Text
-                      style={[
-                        styles.transactionAmount,
-                        { color: transaction.amount < 0 ? "#FF6B6B" : "#4ECDC4" },
-                      ]}
-                    >
-                      ${transaction.amount.toFixed(2)}
-                    </Text>
-               
-                    </View>
-                  </View>
-               
-               </View>
-              ))
-            ) : (
-              <Text>No transactions available</Text>
-            )}
+       {transactions.length>0 ? (
+               transactions.map((transaction, index) => (
+                 <View key={index} style={styles.transactionItem}>
+                   <Text style={styles.transactionDate}>{formatDate(transaction.date)}</Text>
+                   <View style={styles.transactionDetails}>
+                     <Image
+                       source={getImageByCategory(transaction.category)}
+                       style={styles.transactionImage}
+                     />
+                     <View style={styles.textContainer}>
+                       <Text style={styles.transactionDescription}>{transaction.description}</Text>
+                       <Text style={styles.transactionType}>{transaction.category}</Text>
+                     </View>
+                     <View style={styles.felxcontainer}></View>
+                     <View style={styles.textContainer}>
+                       <Text
+                         style={[
+                           styles.transactionAmount,
+                           { color: transaction.amount < 0 ? "#FF6B6B" : "#4ECDC4" },
+                         ]}
+                       >
+                         ${transaction.amount.toFixed(2)}
+                       </Text>
+                     </View>
+                   </View>
+                 </View>
+                
+               ))
+             ) : (
+               <Text style={styles.noTransactionsText}>No transactions available</Text>
+             )}
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
