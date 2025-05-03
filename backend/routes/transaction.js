@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('./auth');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
+const authMiddleware =require('../Middleware/authMiddleware')
 
 router.post('/', authMiddleware, async (req, res) => {
   console.log('Received body:', req.body);

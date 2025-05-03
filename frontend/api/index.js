@@ -93,6 +93,14 @@ export const getUserInfo = async () => {
     throw error;
   }
 };
+export const changePassword = async (passwordData) => {
+  try {
+    const response = await transactionsApi.put('/user/change-password', passwordData);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
 
 
 

@@ -2,14 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { router: authRouter } = require('./routes/auth');
+const authRouter = require('./routes/auth');
 const app = express();
 const transactionRoutes = require('./routes/transaction');
 const userRoutes = require('./routes/user');
 const dataRoutes = require('./routes/data');
-
-
-
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json()); 
 // Routes

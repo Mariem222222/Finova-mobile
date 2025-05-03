@@ -1,24 +1,50 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet,Alert  } from "react-native";
+import { changePassword } from '../api/index';
+
+
 
 const ChangePasswordScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChangePassword = () => {
-    if (newPassword !== confirmPassword) {
-      setError("Both passwords must match.");
-      return;
+  const handleChangePassword = async() => {
+    setLoading(true);
+    try {
+      // Basic validation
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        setError("All fields are required");
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        setError("New passwords must match");
+        return;
+      }
+
+      if (newPassword === currentPassword) {
+        setError("New password must be different from current password");
+        return;
+      }
+      console.log("en cour...")
+      const response = await changePassword({
+        currentPassword:currentPassword,
+        newPassword:newPassword,
+        confirmPassword:confirmPassword
+      });
+      console.log(response)
+      
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setError("");
+      navigation.goBack();
+    } catch (error) {
+      setError(error.message || "Failed to change password. Please try again.");
     }
-    console.log("Current Password:", currentPassword);
-    console.log("New Password:", newPassword);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setError("");
-    navigation.goBack();
   };
 
   return (
@@ -62,6 +88,7 @@ const ChangePasswordScreen = ({ navigation }) => {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       {/* Change Password Button */}
+      
       <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
         <Text style={styles.buttonText}>Change Password</Text>
       </TouchableOpacity>

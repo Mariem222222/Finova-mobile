@@ -5,9 +5,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
-
 const JWT_SECRET = process.env.JWT_SECRET;
-
 // Email transporter config
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
@@ -16,32 +14,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
-
-// ✅ AUTH MIDDLEWARE (for protecting routes)
-async function authMiddleware(req, res, next) {
-  const authHeader = req.header('Authorization');
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ error: 'User not found' })
-      req.user = {
-        id: user._id,
-        name: user.name,
-        phone:user.phone,
-        balance: user.balance,
-        email: user.email
-      }; 
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid or expired token' });
-  }
-}
-
 // 🔐 REGISTER (hash password only)
 router.post('/register', async (req, res) => {
   try {
@@ -195,7 +167,4 @@ router.post('/verify-2fa', async (req, res) => {
 
 
 // 🟢 Export both router and middleware
-module.exports = {
-  router,
-  authMiddleware
-};
+module.exports = router;

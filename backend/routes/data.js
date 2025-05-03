@@ -1,8 +1,8 @@
 
 const express = require('express');
 const router = express.Router();
-const { authMiddleware } = require('./auth');
 const Transaction = require('../models/Transaction');
+const authMiddleware =require('../Middleware/authMiddleware')
 
 
 // Add this new route to your transaction routes
