@@ -1,14 +1,48 @@
-import React from 'react';
+import React, { useState,useEffect } from "react";
 import Profile from "../components/Profile";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity,ActivityIndicator  } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; 
+import { useIsFocused } from '@react-navigation/native';
+import { getUserInfo } from '../api/index'; 
+  
 
 const ProfileScreen = ({ navigation }) => {
+  const [Name,setName]=useState("jawhar");
+  const isFocused = useIsFocused();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+   useEffect(() => {
+      if (isFocused) { 
+        const fetchdata = async () => {
+              try {
+               
+                const userData = await getUserInfo();
+                setName(userData.name|| 'Unknown'); } catch (err) {
+                  setError(err.message);
+                }
+                setLoading(false);
+              };fetchdata()}
+            }, [isFocused]);
+             if (loading) {
+                    return (
+                      <View style={[styles.container, styles.center]}>
+                        <ActivityIndicator size="large" color="#4ECDC4" />
+                      </View>
+                    );
+                  }
+                
+                  if (error) {
+                    return (
+                      <View style={[styles.container, styles.center]}>
+                        <Text style={styles.errorText}>Error: {error}</Text>
+                      </View>
+                    );
+                  }
   return (
     <ScrollView style={styles.container}>
       {/* User Info */}
       <View style={styles.userInfo}>
-        <Profile name="Jawhar Soussia" profileImage={require("../assets/profile.jpg")}/>
+        <Profile name={Name} profileImage={require("../assets/profile.jpg")}/>
       </View>
 
       {/* Personal Information Section */}

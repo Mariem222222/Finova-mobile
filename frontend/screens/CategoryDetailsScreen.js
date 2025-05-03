@@ -1,60 +1,38 @@
 import { View, Text, StyleSheet, ScrollView,Image } from "react-native";
+import { useEffect, useState } from 'react';
 import ECharts from "../helper/ECharts"; 
-
+import { transactionsApi } from '../api/index';
 const CategoryDetailsScreen = ({ route }) => {
   const { category } = route.params;
-
-  const categoryData = {
-    Dépenses: {
-      chartData: [
-        { name: "Cash", value: 49 },
-        { name: "Travel", value: 20 },
-        { name: "Food", value: 15 },
-        { name: "Shopping", value: 10 },
-        { name: "Car", value: 6 },
-      ],
-      transactions: [
-        { date: "Today", description: "Gift Card", amount: -19.2, category: "Shopping", imageUrl: require("../assets/giftcard.png") },
-        { date: "Today", description: "Car Insurance", amount: -200, category: "Car",imageUrl: require("../assets/car.png") },
-        { date: "Last 7 Days", description: "House", amount: -300, category: "Cash",imageUrl: require("../assets/revenue.png") },
-      ],
-    },
-    Revenus: {
-      chartData: [
-        { name: "Salary", value: 70 },
-        { name: "Investments", value: 20 },
-        { name: "Freelance", value: 10 },
-      ],
-      transactions: [
-        { date: "Today", description: "Salary", amount: 2500, category: "Salary",imageUrl: require("../assets/revenue.png") },
-        { date: "Last 7 Days", description: "Freelance Project", amount: 500, category: "Freelance",imageUrl: require("../assets/revenue.png") },
-      ],
-    },
-    Loan: {
-      chartData: [
-        { name: "Mortgage", value: 60 },
-        { name: "Car Loan", value: 30 },
-        { name: "Personal Loan", value: 10 },
-      ],
-      transactions: [
-        { date: "Today", description: "Mortgage Payment", amount: -1200, category: "Mortgage",imageUrl: require("../assets/revenue.png") },
-        { date: "Last 7 Days", description: "Car Loan Payment", amount: -300, category: "Car Loan",imageUrl: require("../assets/car.png") },
-      ],
-    },
-    "L'épargne": {
-      chartData: [
-        { name: "Savings Account", value: 50 },
-        { name: "Investments", value: 30 },
-        { name: "Retirement", value: 20 },
-      ],
-      transactions: [
-        { date: "Today", description: "Savings Deposit", amount: 500, category: "Savings Account",imageUrl: require("../assets/revenue.png") },
-        { date: "Last 7 Days", description: "Investment Deposit", amount: 300, category: "Investments",imageUrl: require("../assets/revenue.png") },
-      ],
-    },
+  const [data, setData] = useState({ chartData: [], transactions: [] });
+  const typeMap = {
+    'Dépenses': 'depense',
+    'Revenus': 'revenue',
+    'Loan': 'loan'
   };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const type = typeMap[category];
+        const response = await transactionsApi.get(`/data/${type}`);
+        setData(response.data);
+        setError(null);
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to fetch data');
+        console.error('API Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const { chartData = [], transactions = [] } = categoryData[category] || {};
+    fetchData();
+  }, [category]);
+
+
+  
 
   const chartOption = {
     tooltip: {
@@ -65,7 +43,7 @@ const CategoryDetailsScreen = ({ route }) => {
       {
         type: "pie",
         radius: "60%",
-        data: chartData,
+        data: data.chartData,
         label: {
           fontSize: 40,
           color: "#fff",
@@ -73,7 +51,19 @@ const CategoryDetailsScreen = ({ route }) => {
       },
     ],
   };
-
+  const getImage = (category) => {
+    const images = {
+      shopping: require('../assets/giftcard.png'),
+      car: require('../assets/car.png'),
+      transfer: require('../assets/revenue.png'),
+      payment: require('../assets/revenue.png'),
+      deposit: require('../assets/revenue.png'),
+      withdrawal: require('../assets/revenue.png'),
+      purchase: require('../assets/revenue.png')
+    
+    };
+    return images[category.toLowerCase()] || require('../assets/revenue.png');
+  };
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{category}</Text>
@@ -90,14 +80,12 @@ const CategoryDetailsScreen = ({ route }) => {
 
       {/* Transaction History */}
       <Text style={styles.sectionTitle}>Transaction History</Text>
-      {transactions.length > 0 ? (
-        transactions.map((transaction, index) => (
+      {data.transactions.length > 0 ? (
+        data.transactions.map((transaction, index) => (
           <View key={index} style={styles.transactionItem}>
             <Text style={styles.transactionDate}>{transaction.date}</Text>
             <View style={styles.transactionDetails}>
-            <Image source={typeof transaction.imageUrl === 'string' ? { uri: transaction.imageUrl } : transaction.imageUrl}
-              style={styles.transactionImage}/>
-             
+            <Image source={getImage(transaction.category)}style={styles.transactionImage}/>
               <View styles={styles.textContainer}>
               <Text style={styles.transactionDescription}>{transaction.description}</Text>
               <Text style={styles.transactioncategory}>{transaction.category}</Text>

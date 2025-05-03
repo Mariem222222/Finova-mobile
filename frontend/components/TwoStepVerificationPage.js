@@ -68,9 +68,9 @@ const TwoStepVerificationScreen = ({ route,navigation }) => {
   }else{
     Alert.alert("You must fille the 2FA code"); 
   }
+}
     
     
-    };
 
     const handleResendCode = async () => {
       setResendDisabled(true);

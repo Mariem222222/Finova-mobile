@@ -49,6 +49,7 @@ const SignUpPage = ({ navigation }) => {
     try {
       const response = await registerUser({
         name: fullName,
+        phone:phoneNumber,
         email: email,
         password: password,
         phoneNumber: phoneNumber // Add this if your backend expects it

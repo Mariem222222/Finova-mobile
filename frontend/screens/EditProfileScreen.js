@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
-
+import React, { useState,useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image,ActivityIndicator } from 'react-native';
+import { getUserInfo } from '../api/index'; 
+import { useIsFocused } from '@react-navigation/native';
 const EditProfileScreen = ({ navigation }) => {
-  const [fullName, setFullName] = useState('Tanya Myroniuk');
   const [email, setEmail] = useState('tanya.myroniuk@gmail.com');
   const [phoneNumber, setPhoneNumber] = useState('+8801712663389');
   const [day, setDay] = useState('28');
   const [month, setMonth] = useState('September');
   const [year, setYear] = useState('2000');
-  const [name, setName] = useState('Jawhar Soussia');
+  const [Name,setName]=useState("jawhar");
+  const isFocused = useIsFocused();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+     useEffect(() => {
+        if (isFocused) { 
+          const fetchdata = async () => {
+                try {
+                 
+                  const userData = await getUserInfo();
+                  setName(userData.name|| 'Unknown');
+                setEmail(userData.email||'tanya.myroniuk@gmail.com')
+              setPhoneNumber(userData.phone||'1712663389') } catch (err) {
+                    setError(err.message);
+                  }
+                  setLoading(false);
+                };fetchdata()}
+              }, [isFocused]);
+               if (loading) {
+                      return (
+                        <View style={[styles.container, styles.center]}>
+                          <ActivityIndicator size="large" color="#4ECDC4" />
+                        </View>
+                      );
+                    }
+                  
+                    if (error) {
+                      return (
+                        <View style={[styles.container, styles.center]}>
+                          <Text style={styles.errorText}>Error: {error}</Text>
+                        </View>
+                      );
+                    }
 
   const handleSave = () => {
     const birthDate = `${day} ${month} ${year}`;
@@ -26,7 +58,7 @@ const EditProfileScreen = ({ navigation }) => {
           <Image source={require('../assets/profile.jpg')} style={styles.profileImage} />
           <View>
             <Text style={styles.welcomeText}>Welcome back</Text>
-            <Text style={styles.nameText}>{name}</Text>
+            <Text style={styles.nameText}>{Name}</Text>
           </View>
         </View>
       </View>
@@ -36,8 +68,8 @@ const EditProfileScreen = ({ navigation }) => {
         <Text style={styles.label}>Full Name</Text>
         <TextInput
           style={styles.input}
-          value={fullName}
-          onChangeText={setFullName}
+          value={Name}
+          onChangeText={setName}
           placeholder="Full Name"
         />
       </View>

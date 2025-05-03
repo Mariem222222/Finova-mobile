@@ -85,6 +85,17 @@ export const postTransactions = async (transactionData) => {
     throw error.response ? error.response.data : error.message;
   }
 };
+export const getUserInfo = async () => {
+  try {
+    const response = await transactionsApi.get('/user/me');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
 
 
 

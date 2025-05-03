@@ -5,12 +5,18 @@ const bodyParser = require('body-parser');
 const { router: authRouter } = require('./routes/auth');
 const app = express();
 const transactionRoutes = require('./routes/transaction');
+const userRoutes = require('./routes/user');
+const dataRoutes = require('./routes/data');
+
+
 
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json()); 
 // Routes
 app.use('/api/transaction', transactionRoutes);
 app.use('/api/auth', authRouter); 
+app.use('/api/user', userRoutes);
+app.use('/api/data', dataRoutes); 
 mongoose.connect('mongodb://localhost:27017/Mobile', {
 })
 .then(() => console.log('Connected to MongoDB'))

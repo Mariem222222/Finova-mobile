@@ -1,20 +1,56 @@
-import React from "react";
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
 import Profile from "../components/Profile";
 import ECharts from "../helper/ECharts"; 
 import { Ionicons } from "@expo/vector-icons";
+import { getUserInfo } from '../api/index'; 
+import { useIsFocused } from '@react-navigation/native';
 
 const StatisticsScreen = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
+   const [Name,setName]=useState("jawhar");
+   const isFocused = useIsFocused();
+   const [error, setError] = useState(null);
+   const [loading, setLoading] = useState(true);
+    useEffect(() => {
+           if (isFocused) { 
+             const fetchdata = async () => {
+                   try {
+                    
+                     const userData = await getUserInfo();
+                     setName(userData.name|| 'Unknown');
+                    } catch (err) {
+                       setError(err.message);
+                     }
+                     setLoading(false);
+                   };fetchdata()}
+                 }, [isFocused]);
+                  if (loading) {
+                         return (
+                           <View style={[styles.container, styles.center]}>
+                             <ActivityIndicator size="large" color="#4ECDC4" />
+                           </View>
+                         );
+                       }
+                     
+                       if (error) {
+                         return (
+                           <View style={[styles.container, styles.center]}>
+                             <Text style={styles.errorText}>Error: {error}</Text>
+                           </View>
+                         );
+                       }
 
   const handleCategoryPress = (category) => {
     navigation.navigate("CategoryDetails", { category });
@@ -206,7 +242,7 @@ const StatisticsScreen = () => {
     <ScrollView style={styles.container}>
       <TouchableOpacity onPress={() => navigation.navigate("profile")}>
         <Profile
-          name="Jawhar Soussia"
+          name={Name}
           profileImage={require("../assets/profile.jpg")}
         />
       </TouchableOpacity>

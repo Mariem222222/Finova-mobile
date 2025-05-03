@@ -32,6 +32,7 @@ async function authMiddleware(req, res, next) {
       req.user = {
         id: user._id,
         name: user.name,
+        phone:user.phone,
         balance: user.balance,
         email: user.email
       }; 
@@ -44,10 +45,10 @@ async function authMiddleware(req, res, next) {
 // 🔐 REGISTER (hash password only)
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name,phone, email, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name,phone, email, password: hashedPassword });
 
     await user.save();
     res.status(201).json({ message: 'User registered!' });

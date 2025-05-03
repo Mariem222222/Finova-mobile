@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import Profile from '../components/Profile';
 import { getTransactions } from '../api/index'; 
 import { useIsFocused } from '@react-navigation/native';
+import { getUserInfo } from '../api/index'; 
 
 
 const HomeScreen = () => {
@@ -21,13 +22,13 @@ const HomeScreen = () => {
       const fetchTransactionsData = async () => {
         try {
           const response = await getTransactions();
-          console.log(response)
+          const userData = await getUserInfo();
           const formattedTransactions = response.transactions.map(tx => ({
             ...tx,
             amount: tx.type === 'revenue' ? tx.amount : -tx.amount,
           }));
-          setName(response.name || 'Unknown'); 
-          setbalance(response.balance || 'N/A');
+          setName(userData.name|| 'Unknown'); 
+          setbalance(userData.balance|| 'N/A');
           setTransactions(formattedTransactions);
         } catch (err) {
           setError(err.message);
@@ -121,7 +122,7 @@ const HomeScreen = () => {
           {/* Manual Add Section */}
           <View style={styles.ajout_container}>
             <Text style={styles.ajoutText}>Ajout Manuelle des dépenses ou revenus</Text>
-            <TouchableOpacity style={styles.button_ajout}  onPress={() => navigation.navigate('ManualEntry', { refreshBalance: triggerRefresh })}>
+            <TouchableOpacity style={styles.button_ajout}  onPress={() => navigation.navigate('ManualEntry')}>
               <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>
           </View>

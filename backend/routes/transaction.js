@@ -40,8 +40,6 @@ router.get('/', authMiddleware, async (req, res) => {
       .sort({ date: -1 })
       .limit(20);
     res.json({
-      balance: req.user.balance,
-      name:req.user.name,
       transactions
     });
   } catch (err) {
