@@ -1,58 +1,63 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image,ActivityIndicator } from "react-native";
 import Icon from 'react-native-vector-icons/Ionicons'; 
+import {fetchBudgets} from '../api/index';
+import { useIsFocused } from '@react-navigation/native';
+import { getUserInfo } from '../api/index'; 
 
 const ManagementScreen = ({ navigation }) => {
-  const [budgets, setBudgets] = useState([
-    {
-      id: "1",
-      title: "Achat Immobilier",
-      currentAmount: 3300,
-      targetAmount: 25000,
-      type: "Epargne",
-      lastUpdated: "1 min",
-      description: "You can save more money by having less money by 10% of house dépenses",
-    },
-    {
-      id: "2",
-      title: "Budget Familial",
-      currentAmount: 5400,
-      targetAmount: 6000,
-      type: "Budget Personnel",
-      lastUpdated: "1 min",
-      description: "You can save more money by having less money by 2% giving to your daughter",
-    },
-    {
-      id: "3",
-      title: "Vacances",
-      currentAmount: 300,
-      targetAmount: 5000,
-      type: "Epargne",
-      lastUpdated: "1 min",
-      description: "You can save more money by having less money by 5% dépenses on shopping",
-    },
-    {
-      id: "4",
-      title: "Budget electromenager",
-      currentAmount: 4200,
-      targetAmount: 10000,
-      type: "Budget Personnel",
-      lastUpdated: "1 moin",
-      description: "Save money on appliances",
-    },
-  ]);
+  const [budgets, setBudgets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const isFocused = useIsFocused();
+useEffect(() => {
+  if (isFocused) {
+  const handlefetchBudgets = async () => {
+  try{
+  const data = await fetchBudgets();
+    setBudgets(data);
+    setLoading(false);
+  } catch (err) {
+    setError(err.message);
+    setLoading(false);
+  }
+}
+  handlefetchBudgets();
+}}, [isFocused]);
 
-  const handleUpdateBudget = (updatedBudget) => {
-    setBudgets(
-      budgets.map((budget) =>
-        budget.id === updatedBudget.id ? updatedBudget : budget
-        )
-        );
-      };
-      const navigateToAddBudget = (budget) => {
+
+
+// const handleUpdateBudget = async (updatedBudget) => {
+//   try {
+//     const response = await fetch(`http://localhost:5000/api/budgets/${updatedBudget._id}`, {
+//       method: 'PUT',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify(updatedBudget),
+//     });
+//     if (!response.ok) throw new Error('Failed to update budget');
+//     const data = await response.json();
+//     setBudgets(budgets.map(b => b._id === data._id ? data : b));
+//   } catch (err) {
+//     console.error('Error updating budget:', err);
+//     setError(err.message);
+//   }
+// };
+// const handleDeleteBudget = async (budgetId) => {
+//   try {
+//     const response = await fetch(`http://localhost:5000/api/budgets/${budgetId}`, {
+//       method: 'DELETE',
+//     });
+//     if (!response.ok) throw new Error('Failed to delete budget');
+//     setBudgets(budgets.filter(b => b._id !== budgetId));
+//   } catch (err) {
+//     console.error('Error deleting budget:', err);
+//     setError(err.message);
+//   }
+// };
+      const navigateToAddBudget = (budgets) => {
         navigation.navigate("AddBudget")
       };
-      const navigateToModifyBudget = (budget) => {
+      const navigateToModifyBudget = (budgets) => {
         navigation.navigate("ModifierBudget")
       };
 
@@ -70,13 +75,30 @@ const ManagementScreen = ({ navigation }) => {
             return null; 
         }
       };
-
+      if (loading) {
+        return (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        );
+      }
+    
+      if (error) {
+        return (
+          <View style={styles.centerContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+            <TouchableOpacity onPress={fetchBudgets}>
+              <Text style={styles.retryText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      }
       return (
         <ScrollView style={styles.container}>
       {/* Header  */}
           {/* Budget/Saving Cards */}
-          {budgets.map((budget) => (
-            <View key={budget.id} style={styles.card}>
+          {budgets.map((budget,index) => (
+            <View key={index} style={styles.card}>
               <View style={styles.cardHeader}>
                 <Image source={getIconForBudget(budget.title)} style={styles.budgetIcon} />
                 <View>

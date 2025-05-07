@@ -1,18 +1,40 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image,ActivityIndicator  } from "react-native";
 import CustomSlider from "../helper/CustomSlider";
 
 const ModifierBudget = ({ navigation, route }) => {
   const { budget } = route.params || {};
-
-  const [title, setTitle] = useState(budget?.title || "");
-  const [currentAmount, setCurrentAmount] = useState(budget?.currentAmount || 0);
-  const [targetAmount, setTargetAmount] = useState(budget?.targetAmount || 0);
-  const [type, setType] = useState(budget?.type || "Epargne");
-  const [description, setDescription] = useState(budget?.description || "");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    title: budget.title,
+    currentAmount: budget.currentAmount,
+    targetAmount: budget.targetAmount,
+    type: budget.type,
+    description: budget.description,
+  });
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updatedBudget = {
+        ...budget,
+        ...formData,
+        lastUpdated: new Date().toISOString()
+      };
+
+      // Call the update callback from parent
+      await route.params.onSave(updatedBudget);
+      
+      setIsSuccessPopupVisible(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
     setIsSuccessPopupVisible(true); 
   };
 
@@ -80,7 +102,7 @@ const ModifierBudget = ({ navigation, route }) => {
       <CustomSlider
         minValue={0}
         maxValue={10000}
-        step={100}
+        step={10}
         onValueChange={setCurrentAmount}
         minimumTrackTintColor="#0066FF"
         maximumTrackTintColor="#A2A2A7"
@@ -91,9 +113,9 @@ const ModifierBudget = ({ navigation, route }) => {
         <Text style={styles.amountLabel}>$10,000</Text>
       </View>
       </View>
-
+      {error && <Text style={styles.errorText}>{error}</Text>}
       {/* Submit Button */}
-      <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
+      <TouchableOpacity style={styles.addButton} onPress={handleSubmit} disabled={loading}>
         <Text style={styles.addButtonText}>Modifier</Text>
       </TouchableOpacity>
 
@@ -156,6 +178,11 @@ const styles = StyleSheet.create({
   amountLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  errorText: {
+    color: '#ff4444',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   amountLabel: {
     fontSize: 14,

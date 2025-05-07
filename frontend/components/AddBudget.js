@@ -1,19 +1,53 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image,ActivityIndicator  } from "react-native";
 import CustomSlider from "../helper/CustomSlider";
-
-const AddBudget = ({ navigation, route }) => {
-  const { budget } = route.params || {};
-
-  const [title, setTitle] = useState(budget?.title || "");
-  const [currentAmount, setCurrentAmount] = useState(budget?.currentAmount || 0);
-  const [targetAmount, setTargetAmount] = useState(budget?.targetAmount || 0);
-  const [type, setType] = useState(budget?.type || "Epargne");
-  const [description, setDescription] = useState(budget?.description || "");
+import {AddBudgets} from '../api/index';
+import { getUserInfo } from '../api/index'; 
+import { useIsFocused } from '@react-navigation/native';
+const AddBudget = ({ navigation }) => {
+  const [title, setTitle] = useState("");
+  const [currentAmount, setCurrentAmount] = useState(0);
+  const [targetAmount, setTargetAmount] = useState(0);
+  const [type, setType] = useState("Epargne");
+  const [description, setDescription] = useState("");
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
-
-  const handleSubmit = () => {
-    setIsSuccessPopupVisible(true); 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const isFocused = useIsFocused();
+ useEffect(() => {
+   if (isFocused) {
+  const fetchData = async () => {
+    try {
+      const userData = await getUserInfo();
+      setCurrentAmount(userData.balance||"N/A");
+    }catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+  fetchData();
+}}, [isFocused]);
+  
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const newBudget = {
+        title:title,
+        currentAmount:currentAmount,
+        targetAmount:targetAmount,
+        type:type,
+        description:description
+      };
+      const createdBudget = await AddBudgets(newBudget);
+      console.log("saved : ",createdBudget)
+      setIsSuccessPopupVisible(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const closePopup = () => {
@@ -41,8 +75,7 @@ const AddBudget = ({ navigation, route }) => {
         placeholder="Montant Cible"
         keyboardType="numeric"
         placeholderTextColor="#888888"
-        value={targetAmount.toString()}
-        onChangeText={(text) => setTargetAmount(Number(text))}
+        value={currentAmount.toString()}
       />
 
       {/* Type Input */}
@@ -64,13 +97,13 @@ const AddBudget = ({ navigation, route }) => {
       />
 
       {/* Amount Slider */}
-      <Text style={styles.amountText}>Amount: ${currentAmount.toFixed(2)}</Text>
+      <Text style={styles.amountText}>Amount: ${targetAmount.toFixed(2)}</Text>
       <View style={styles.amount_Container}>
       <CustomSlider
         minValue={0}
         maxValue={10000}
-        step={100}
-        onValueChange={setCurrentAmount}
+        step={10}
+        onValueChange={setTargetAmount}
         minimumTrackTintColor="#0066FF"
         maximumTrackTintColor="#A2A2A7"
       />
@@ -80,9 +113,9 @@ const AddBudget = ({ navigation, route }) => {
         <Text style={styles.amountLabel}>$10,000</Text>
       </View>
       </View>
-
+      {error && <Text style={styles.errorText}>{error}</Text>}
       {/* Submit Button */}
-      <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
+      <TouchableOpacity style={styles.addButton} onPress={handleSubmit}disabled={loading}>
         <Text style={styles.addButtonText}> Ajouter</Text>
       </TouchableOpacity>
 
@@ -125,6 +158,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 20,
+  },
+  errorText: {
+    color: '#ff4444',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   input: {
     borderBottomWidth: 1,

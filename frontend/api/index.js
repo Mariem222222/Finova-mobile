@@ -98,6 +98,21 @@ export const changePassword = async (passwordData) => {
     const response = await transactionsApi.put('/user/change-password', passwordData);
     return response.data;
   } catch (error) {
+    throw error.response ? error.response.data : error.message; 
+  }
+};
+export const fetchBudgets = async () => {
+  try {
+    const response = await transactionsApi.get('/budgets');
+    return response.data
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const AddBudgets = async (newBudget) => {
+  try {
+    const response = await transactionsApi.post('/budgets',newBudget);
+  } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
 };

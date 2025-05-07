@@ -1,0 +1,30 @@
+const mongoose = require('mongoose');
+
+const budgetSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  currentAmount: {
+    type: Number,
+    required: true
+  },
+  targetAmount: {
+    type: Number,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  lastUpdated: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model('Budget', budgetSchema);
