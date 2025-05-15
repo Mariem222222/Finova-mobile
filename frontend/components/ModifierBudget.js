@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image,ActivityIndicator  } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image  } from "react-native";
 import CustomSlider from "../helper/CustomSlider";
+import {ModifyBudget} from '../api/index';
 
 const ModifierBudget = ({ navigation, route }) => {
   const { budget } = route.params || {};
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    title: budget.title,
-    currentAmount: budget.currentAmount,
-    targetAmount: budget.targetAmount,
-    type: budget.type,
-    description: budget.description,
+  title: budget?.title || '',
+  currentAmount: budget?.currentAmount || 0,
+  targetAmount: budget?.targetAmount || 0,
+  type: budget?.type || '',
+  description: budget?.description || '',
   });
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
-
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const updatedBudget = {
         ...budget,
@@ -27,7 +26,8 @@ const ModifierBudget = ({ navigation, route }) => {
       };
 
       // Call the update callback from parent
-      await route.params.onSave(updatedBudget);
+      const newBudget = await ModifyBudget(updatedBudget);
+      console.log("budget updated to : ",newBudget)
       
       setIsSuccessPopupVisible(true);
     } catch (err) {
@@ -35,7 +35,7 @@ const ModifierBudget = ({ navigation, route }) => {
     } finally {
       setLoading(false);
     }
-    setIsSuccessPopupVisible(true); 
+  
   };
 
   const closePopup = () => {
@@ -46,45 +46,52 @@ const ModifierBudget = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-       Modifier le Budget
+       Modify The Budget
       </Text>
 
       {/* Title Input */}
       <TextInput
         style={styles.input}
-        placeholder="Titre (e.g., Achat Immobilier)"
-        value={title}
+        placeholder="Title (Real Estate , ...)"
+        value={formData.title}
         placeholderTextColor="#888888"
-        onChangeText={setTitle}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
       />
 
       {/* Current Amount Input */}
       <TextInput
         style={styles.input}
-        placeholder="Montant Actuel"
+        placeholder="Current Amount"
         keyboardType="numeric"
-        value={currentAmount.toString()}
+        value={formData.currentAmount.toString()}
         placeholderTextColor="#888888"
-        onChangeText={(text) => setCurrentAmount(Number(text))}
+        onChangeText={(text) => {
+          const currentAmount = Number(text) || 0;
+          setFormData(prev => ({ ...prev, currentAmount }));
+        }}
       />
 
       {/* Target Amount Input */}
       <TextInput
         style={styles.input}
-        placeholder="Montant Cible"
+        placeholder="Target Amount"
         keyboardType="numeric"
         placeholderTextColor="#888888"
-        value={targetAmount.toString()}
-        onChangeText={(text) => setTargetAmount(Number(text))}
+        value={formData.targetAmount.toString()}
+        onChangeText={(text) => {
+          const targetAmount = Number(text) || 0;
+          setFormData(prev => ({ ...prev, targetAmount }));
+        }}
       />
 
       {/* Type Input */}
       <TextInput
         style={styles.input}
         placeholderTextColor="#888888"
-        placeholder="Type (e.g., Epargne, Budget Personnel)"
-        value={type}
-        onChangeText={setType}
+        placeholder="Type (Saving,Personal Budget)"
+        value={formData.type}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, type: text }))}
+
       />
 
       {/* Description Input */}
@@ -92,18 +99,19 @@ const ModifierBudget = ({ navigation, route }) => {
         style={styles.input}
         placeholderTextColor="#888888"
         placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
+        value={formData.description}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
       />
 
       {/* Amount Slider */}
-      <Text style={styles.amountText}>Amount: ${currentAmount.toFixed(2)}</Text>
+      <Text style={styles.amountText}>Amount: ${formData.currentAmount.toFixed(2)}</Text>
       <View style={styles.amount_Container}>
       <CustomSlider
         minValue={0}
         maxValue={10000}
         step={10}
-        onValueChange={setCurrentAmount}
+        onValueChange={(value) => 
+          setFormData(prev => ({ ...prev, currentAmount: value }))}
         minimumTrackTintColor="#0066FF"
         maximumTrackTintColor="#A2A2A7"
       />
@@ -116,7 +124,7 @@ const ModifierBudget = ({ navigation, route }) => {
       {error && <Text style={styles.errorText}>{error}</Text>}
       {/* Submit Button */}
       <TouchableOpacity style={styles.addButton} onPress={handleSubmit} disabled={loading}>
-        <Text style={styles.addButtonText}>Modifier</Text>
+        <Text style={styles.addButtonText}>Modify</Text>
       </TouchableOpacity>
 
       {/* Success Popup */}
@@ -129,10 +137,10 @@ const ModifierBudget = ({ navigation, route }) => {
         <View style={styles.popupContainer}>
           <View style={styles.popupContent}>
             <Text style={styles.popupTitle}>
-               Modification Réussie
+            Edited Successfuly
             </Text>
             <Text style={styles.popupText}>
-          Le budget a été modifié avec succès.
+          The budget was successfully Edited.
             </Text>
             <Image source={require("../assets/done.png")} style={styles.popup_image} />
             <TouchableOpacity style={styles.popupButton} onPress={closePopup}>

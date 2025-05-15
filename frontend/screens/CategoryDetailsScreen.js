@@ -6,8 +6,8 @@ const CategoryDetailsScreen = ({ route }) => {
   const { category } = route.params;
   const [data, setData] = useState({ chartData: [], transactions: [] });
   const typeMap = {
-    'Dépenses': 'depense',
-    'Revenus': 'revenue',
+    'Expense': 'expense',
+    'Income': 'income',
     'Loan': 'loan'
   };
   const [loading, setLoading] = useState(true);
@@ -69,6 +69,8 @@ const CategoryDetailsScreen = ({ route }) => {
       <Text style={styles.title}>{category}</Text>
 
       {/* ECharts Pie Chart */}
+
+
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Category Chart</Text>
         <View style={styles.chartWrapper}>
@@ -79,6 +81,8 @@ const CategoryDetailsScreen = ({ route }) => {
       </View>
 
       {/* Transaction History */}
+
+
       <Text style={styles.sectionTitle}>Transaction History</Text>
       {data.transactions.length > 0 ? (
         data.transactions.map((transaction, index) => (

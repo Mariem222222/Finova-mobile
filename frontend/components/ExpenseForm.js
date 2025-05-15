@@ -37,7 +37,7 @@ const ExpenseForm = ({ navigation }) => {
      try {
        const transactionData = {
          amount:Number(amount),
-         type:"depense",
+         type:"expense",
          description:description,
          category: category
        };
@@ -56,7 +56,7 @@ const ExpenseForm = ({ navigation }) => {
    };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Ajout du Nouveau Dépense</Text>
+      <Text style={styles.title}>Add A New Expense</Text>
 
       {/* Description Input */}
       <TextInput

@@ -42,7 +42,6 @@ transactionsApi.interceptors.request.use(async (config) => {
   try {
     // Try different storage solutions if needed
     const token = await getToken();
-    console.log('Retrieved token:', token); 
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -112,11 +111,28 @@ export const fetchBudgets = async () => {
 export const AddBudgets = async (newBudget) => {
   try {
     const response = await transactionsApi.post('/budgets',newBudget);
+    return response.data
   } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
 };
-
+export const ModifyBudget = async (updatedBudget) => {
+   try {
+  const response = await transactionsApi.put(`/budgets/${updatedBudget._id}`, updatedBudget);
+    return response.data
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const getFinancialRecommendation = async () => {
+  try {
+    const response = await transactionsApi.get('/recommendations');
+    return response.data.cards || []; 
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    return [];
+  }
+};
 
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image,ActivityIndicator  } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image  } from "react-native";
 import CustomSlider from "../helper/CustomSlider";
 import {AddBudgets} from '../api/index';
 import { getUserInfo } from '../api/index'; 
@@ -8,7 +8,7 @@ const AddBudget = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [currentAmount, setCurrentAmount] = useState(0);
   const [targetAmount, setTargetAmount] = useState(0);
-  const [type, setType] = useState("Epargne");
+  const [type, setType] = useState("Savings");
   const [description, setDescription] = useState("");
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,13 +58,13 @@ const AddBudget = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-         Ajouter un Nouveau Budget
+         Add A New Budget
       </Text>
 
       {/* Title Input */}
       <TextInput
         style={styles.input}
-        placeholder="Titre (e.g., Achat Immobilier)"
+        placeholder="Title ( Real Estate Purchase,..)"
         value={title}
         placeholderTextColor="#888888"
         onChangeText={setTitle}
@@ -72,7 +72,7 @@ const AddBudget = ({ navigation }) => {
       {/* Target Amount Input */}
       <TextInput
         style={styles.input}
-        placeholder="Montant Cible"
+        placeholder="Target Amount"
         keyboardType="numeric"
         placeholderTextColor="#888888"
         value={currentAmount.toString()}
@@ -82,7 +82,7 @@ const AddBudget = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholderTextColor="#888888"
-        placeholder="Type (e.g., Epargne, Budget Personnel)"
+        placeholder="Type (Savingd, Personal Budgets)"
         value={type}
         onChangeText={setType}
       />
@@ -116,7 +116,7 @@ const AddBudget = ({ navigation }) => {
       {error && <Text style={styles.errorText}>{error}</Text>}
       {/* Submit Button */}
       <TouchableOpacity style={styles.addButton} onPress={handleSubmit}disabled={loading}>
-        <Text style={styles.addButtonText}> Ajouter</Text>
+        <Text style={styles.addButtonText}> Add</Text>
       </TouchableOpacity>
 
       {/* Success Popup */}

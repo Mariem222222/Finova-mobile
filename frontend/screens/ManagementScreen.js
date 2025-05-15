@@ -4,7 +4,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {fetchBudgets} from '../api/index';
 import { useIsFocused } from '@react-navigation/native';
 import { getUserInfo } from '../api/index'; 
-
 const ManagementScreen = ({ navigation }) => {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +14,10 @@ useEffect(() => {
   const handlefetchBudgets = async () => {
   try{
   const data = await fetchBudgets();
+   const userData = await getUserInfo();
+  data.currentAmount=userData.balance;
+  console.log("fetched data : ",data)
+
     setBudgets(data);
     setLoading(false);
   } catch (err) {
@@ -42,23 +45,15 @@ useEffect(() => {
 //     setError(err.message);
 //   }
 // };
-// const handleDeleteBudget = async (budgetId) => {
-//   try {
-//     const response = await fetch(`http://localhost:5000/api/budgets/${budgetId}`, {
-//       method: 'DELETE',
-//     });
-//     if (!response.ok) throw new Error('Failed to delete budget');
-//     setBudgets(budgets.filter(b => b._id !== budgetId));
-//   } catch (err) {
-//     console.error('Error deleting budget:', err);
-//     setError(err.message);
-//   }
-// };
-      const navigateToAddBudget = (budgets) => {
+const handleDeleteBudget = (budgetId) => {
+  // Frontend-only deletion
+  setBudgets(prevBudgets => prevBudgets.filter(b => b._id !== budgetId));
+};
+      const navigateToAddBudget = () => {
         navigation.navigate("AddBudget")
       };
-      const navigateToModifyBudget = (budgets) => {
-        navigation.navigate("ModifierBudget")
+      const navigateToModifyBudget = (budget) => {
+        navigation.navigate("ModifierBudget", { budget: budget });
       };
 
       const getIconForBudget = (title) => {
@@ -72,7 +67,7 @@ useEffect(() => {
           case "Budget electromenager":
             return require('../assets/revenue.png'); 
           default:
-            return null; 
+            return require('../assets/revenue.png'); 
         }
       };
       if (loading) {
@@ -106,7 +101,13 @@ useEffect(() => {
                   <Text style={styles.cardSubtitle}>{budget.type}</Text>
                 </View>
                 <View style={styles.lastUpdatedContainer}>
-                  <Text style={styles.lastUpdatedText}>mis a jour il y a {budget.lastUpdated}</Text>
+                <TouchableOpacity 
+                    onPress={() => handleDeleteBudget(budget._id)}
+                    style={styles.deleteButton}
+                    >
+                  <Icon name="close-outline" size={20} color="#FF6B6B" />
+                  </TouchableOpacity>
+                  <Text style={styles.lastUpdatedText}>last Updated {budget.lastUpdated}</Text>
                   <Text style={styles.amountText}>${budget.currentAmount}</Text>
                 </View>
               </View>
@@ -137,7 +138,7 @@ useEffect(() => {
                 style={styles.modifyButton}
                 onPress={() => navigateToModifyBudget(budget)}
                 >
-                <Text style={styles.modifyButtonText}>Modifier</Text>
+                <Text style={styles.modifyButtonText}>Modify</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -165,6 +166,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     paddingHorizontal: 20,
     marginBottom: 20,
+  },
+  deleteButton: {
+    padding: 4,
   },
   card: {
     backgroundColor: "#1E1E2D", 

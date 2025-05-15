@@ -9,7 +9,7 @@ const authMiddleware =require('../Middleware/authMiddleware')
 // routes/data.js
 router.get('/:type', authMiddleware, async (req, res) => {
     try {
-      const validTypes = ['revenue', 'depense', 'loan'];
+      const validTypes = ['income', 'expense', 'loan'];
       if (!validTypes.includes(req.params.type)) {
         return res.status(400).json({ error: 'Invalid transaction type' });
       }

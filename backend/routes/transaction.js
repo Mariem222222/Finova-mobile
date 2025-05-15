@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
-const authMiddleware =require('../Middleware/authMiddleware')
+const authMiddleware =require('../Middleware/authMiddleware');
 
 router.post('/', authMiddleware, async (req, res) => {
   console.log('Received body:', req.body);
@@ -21,7 +21,7 @@ router.post('/', authMiddleware, async (req, res) => {
     });
 
     const user = await User.findById(req.user.id);
-    user.balance += type === "revenue" ? amount : -amount;
+    user.balance += type === "income" ? amount : -amount;
     await transaction.save();
     console.log(`Transaction saved with ID: ${transaction._id}`);
     user.transactions.push(transaction);

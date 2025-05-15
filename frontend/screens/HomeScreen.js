@@ -100,7 +100,7 @@ const HomeScreen = () => {
           <TouchableOpacity>
             <View style={styles.Second_Container_scan}>
               <Image source={require("../assets/add.png")} style={styles.add_img} />
-              <Text style={styles.scanButtonText}>Scanner Invoice</Text>
+              <Text style={styles.scanButtonText}>Scan Invoice</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -110,18 +110,18 @@ const HomeScreen = () => {
           {/* Budget and Expenses Section */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Budget Prévisionnel</Text>
+              <Text style={styles.statLabel}>forecasted budget</Text>
               <Text style={styles.statValue_budget}>${plannedBudget.toFixed(2)}</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Dépenses Réel</Text>
+              <Text style={styles.statLabel}>Actual Expenses</Text>
               <Text style={styles.statValue_depence}>${actualExpenses.toFixed(2)}</Text>
             </View>
           </View>
 
           {/* Manual Add Section */}
           <View style={styles.ajout_container}>
-            <Text style={styles.ajoutText}>Ajout Manuelle des dépenses ou revenus</Text>
+            <Text style={styles.ajoutText}>Manually adding expenses or income</Text>
             <TouchableOpacity style={styles.button_ajout}  onPress={() => navigation.navigate('ManualEntry')}>
               <Text style={styles.buttonText}>+</Text>
             </TouchableOpacity>

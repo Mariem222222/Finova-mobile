@@ -11,12 +11,12 @@ const ManualEntryScreen = ({ navigation }) => {
       
       {/* Revenue Option */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('RevenueForm')}>
-        <Text style={styles.buttonText}>Revenue</Text>
+        <Text style={styles.buttonText}>Income</Text>
       </TouchableOpacity>
       
       {/* Dépense Option */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ExpenseForm')}>
-        <Text style={styles.buttonText}>Dépense</Text>
+        <Text style={styles.buttonText}>Expenses</Text>
       </TouchableOpacity>
 
       {/* Loan Option */}

@@ -10,6 +10,7 @@ const transactionRoutes = require('./routes/transaction');
 const budget=require('./routes/budgets')
 const userRoutes = require('./routes/user');
 const dataRoutes = require('./routes/data');
+const recommendationRoutes = require('./routes/recommendations');
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json()); 
 // Routes
@@ -18,6 +19,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRoutes);
 app.use('/api/data', dataRoutes); 
 app.use('/api/budgets',budget);
+app.use('/api/recommendations', recommendationRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');

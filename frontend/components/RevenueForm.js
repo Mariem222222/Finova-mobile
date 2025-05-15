@@ -34,7 +34,7 @@ const RevenueForm = ({ navigation  }) => {
     try {
       const transactionData = {
         amount:Number(amount),
-        type:"revenue",
+        type:"income",
         description:description,
         category: category
       };
@@ -55,7 +55,7 @@ const RevenueForm = ({ navigation  }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Ajout du Nouveau Revenue</Text>
+      <Text style={styles.title}>Add A New Revenue</Text>
 
       {/* Description Input */}
       <TextInput

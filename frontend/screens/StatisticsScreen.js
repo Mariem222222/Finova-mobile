@@ -15,6 +15,8 @@ import ECharts from "../helper/ECharts";
 import { Ionicons } from "@expo/vector-icons";
 import { getUserInfo } from '../api/index'; 
 import { useIsFocused } from '@react-navigation/native';
+import { getTransactions } from '../api/index'; 
+import { getFinancialRecommendation } from '../api/index'; 
 
 const StatisticsScreen = () => {
   const navigation = useNavigation();
@@ -23,19 +25,32 @@ const StatisticsScreen = () => {
    const isFocused = useIsFocused();
    const [error, setError] = useState(null);
    const [loading, setLoading] = useState(true);
-    useEffect(() => {
-           if (isFocused) { 
-             const fetchdata = async () => {
-                   try {
-                    
-                     const userData = await getUserInfo();
-                     setName(userData.name|| 'Unknown');
-                    } catch (err) {
-                       setError(err.message);
-                     }
-                     setLoading(false);
-                   };fetchdata()}
-                 }, [isFocused]);
+  const [recommendation, setRecommendation] = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+useEffect(() => {
+  if (isFocused) { 
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const userData = await getUserInfo();
+        setName(userData.name || 'Unknown');
+          setIsAnalyzing(true);
+          const analysis = await getFinancialRecommendation();
+          console.log(analysis)
+          setRecommendation(analysis);
+        }
+        
+       catch (err) {
+        console.error('Fetch error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setIsAnalyzing(false);
+      }
+    };
+    fetchData();
+  }
+}, [isFocused]);
                   if (loading) {
                          return (
                            <View style={[styles.container, styles.center]}>
@@ -51,7 +66,17 @@ const StatisticsScreen = () => {
                            </View>
                          );
                        }
+const getCategoryColor = (category) => {
+  const categoryColors = {
+    'Savings': '#4ECDC4',
+    'Spending': '#FF3F60',
+    'Investments': '#8402BC',
+    'Goals': '#4791FF',
+    'default': '#7D7E8B'
+  };
 
+  return categoryColors[category] || categoryColors.default;
+};
   const handleCategoryPress = (category) => {
     navigation.navigate("CategoryDetails", { category });
   };
@@ -260,17 +285,17 @@ const StatisticsScreen = () => {
         <View>
         <TouchableOpacity
           style={[styles.categoryButton, { backgroundColor: "#FF2366" }]}
-          onPress={() => handleCategoryPress("Dépenses")}
+          onPress={() => handleCategoryPress("Expense")}
         >
           <Ionicons name="arrow-up-outline" color={"#fff"} size={20}>
           </Ionicons>
         </TouchableOpacity>
-        <Text style={styles.text_icon}>Dépenses</Text>
+        <Text style={styles.text_icon}>Expense</Text>
         </View>
         <View>
         <TouchableOpacity
           style={[styles.categoryButton, { backgroundColor: "#02BC77" }]}
-          onPress={() => handleCategoryPress("Revenus")}
+          onPress={() => handleCategoryPress("Income")}
         >
           <Ionicons
             name="arrow-down-outline"
@@ -278,7 +303,7 @@ const StatisticsScreen = () => {
             size={20}
           ></Ionicons>
         </TouchableOpacity>
-        <Text style={styles.text_icon}>Revenus</Text>
+        <Text style={styles.text_icon}>Income</Text>
         </View>
         <View>
         <TouchableOpacity
@@ -292,7 +317,7 @@ const StatisticsScreen = () => {
         <View>
         <TouchableOpacity
           style={[styles.categoryButton, { backgroundColor: "#4791FF" }]}
-          onPress={() => handleCategoryPress("L'épargne")}
+          onPress={() => handleCategoryPress("Savings")}
         >
           <Ionicons
             name="cloud-done-outline"
@@ -300,7 +325,7 @@ const StatisticsScreen = () => {
             size={20}
           ></Ionicons>
         </TouchableOpacity>
-        <Text style={styles.text_icon}>L'epagne</Text>
+        <Text style={styles.text_icon}>Savings</Text>
         </View>
       </View>
 
@@ -315,11 +340,34 @@ const StatisticsScreen = () => {
       </View>
 
       <Text style={styles.title}>Recommendation et optimisation</Text>
-      <View style={styles.recommendationContainer}>
-        <Text style={styles.recommendationText}>
-          Here are some recommendations to optimize your finances...
-        </Text>
+<View style={styles.recommendationsContainer}>
+  {isAnalyzing ? (
+    <ActivityIndicator size="small" color="#4ECDC4" />
+  ) : recommendation.length > 0 ? (
+    recommendation.map((card, index) => (
+      <View key={index} style={[
+        styles.recommendationCard,
+        { borderLeftWidth: 5, borderLeftColor:getCategoryColor(card.category) }
+      ]}>
+        <Text style={styles.cardTitle}>{card.title}</Text>
+        <Text style={styles.cardCategory}>{card.category} Advice</Text>
+        <Text style={styles.cardDetail}>{card.detail}</Text>
+        <View style={styles.actionItemsContainer}>
+          {card.actionItems.map((item, itemIndex) => (
+            <View key={itemIndex} style={styles.actionItem}>
+              <Text style={styles.bullet}>•</Text>
+              <Text style={styles.actionText}>{item}</Text>
+            </View>
+          ))}
+        </View>
       </View>
+    ))
+  ) : (
+    <Text style={styles.recommendationText}>
+      No financial recommendations available. Your finances look healthy!
+    </Text>
+  )}
+</View>
     </ScrollView>
   );
 };
@@ -356,10 +404,60 @@ const styles = StyleSheet.create({
     color:"#fff",
     textAlign:"center",
   },
+  recommendationsContainer: {
+    marginBottom: 25,
+  },
+  cardCategory: {
+  color: '#7D7E8B',
+  fontSize: 12,
+  fontWeight: '500',
+  marginBottom: 4,
+  textTransform: 'uppercase',
+},
+recommendationCard: {
+  backgroundColor: "#232533",
+  padding: 16,
+  borderRadius: 8,
+  marginBottom: 12,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+},
+  cardTitle: {
+    color: "#4ECDC4",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  cardDetail: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  actionItemsContainer: {
+    marginLeft: 10,
+  },
+  actionItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 4,
+  },
+  bullet: {
+    color: "#FFFFFF",
+    marginRight: 8,
+  },
+  actionText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    flex: 1,
+  },
+  // Keep your existing recommendationContainer as fallback
   recommendationContainer: {
     backgroundColor: "#232533",
     padding: 20,
-    marginBottom:25,
+    marginBottom: 25,
     borderRadius: 12,
   },
   recommendationText: {

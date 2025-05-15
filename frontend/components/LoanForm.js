@@ -55,7 +55,7 @@ const LoanForm = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Ajout du Nouveau Loan</Text>
+      <Text style={styles.title}>Add A New Loan </Text>
 
       {/* Description Input */}
       <TextInput

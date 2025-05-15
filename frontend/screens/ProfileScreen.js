@@ -57,17 +57,17 @@ const ProfileScreen = ({ navigation }) => {
         {/* Other Options */}
         <TouchableOpacity style={styles.option}>
           <Icon name="save" size={24} color="#fff" style={styles.optionIcon} />
-          <Text style={styles.optionText}>Sauvegarde et restauration</Text>
+          <Text style={styles.optionText}>Backup and Restore</Text>
           <Icon name="arrow-forward-ios" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={() => navigation.navigate('TransactionHistory')}>
           <Icon name="history" size={24} color="#fff" style={styles.optionIcon} />
-          <Text style={styles.optionText}>Historique</Text>
+          <Text style={styles.optionText}>History</Text>
           <Icon name="arrow-forward-ios" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
           <Icon name="eco" size={24} color="#fff" style={styles.optionIcon} />
-          <Text style={styles.optionText}>Meilleure pratique de consomation</Text>
+          <Text style={styles.optionText}>Best consumption practice</Text>
           <Icon name="arrow-forward-ios" size={20} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.option}>
