@@ -15,6 +15,12 @@ const UserSchema = new mongoose.Schema({
   }],twoFACode: {
     type: String,
   },
+  ResetCode: {
+    type: String,
+  },
+  ResetCodeExpire: {
+    type: Date,
+  },
   twoFACodeExpires: {
     type: Date,
   },

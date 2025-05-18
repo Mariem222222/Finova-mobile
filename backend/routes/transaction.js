@@ -5,12 +5,14 @@ const User = require('../models/User');
 const authMiddleware =require('../Middleware/authMiddleware');
 
 router.post('/', authMiddleware, async (req, res) => {
-  console.log('Received body:', req.body);
   try {
-    const { amount, type, description, category } = req.body;
+    const { amount, type, description, category,frequency } = req.body;
     if (!amount || !type || !description) {
       console.error('Validation failed: Missing required fields');
       return res.status(401).json({ error: 'Missing required fields' });
+    }
+     if (!['one-time', 'monthly'].includes(frequency)) {
+      return res.status(400).json({ error: 'Invalid frequency' });
     }
     const transaction = new Transaction({
       user: req.user.id,
@@ -18,6 +20,9 @@ router.post('/', authMiddleware, async (req, res) => {
       type:type,
       description:description,
       category:category,
+      frequency,
+      nextPaymentDate: frequency === 'monthly' ? 
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null
     });
 
     const user = await User.findById(req.user.id);
@@ -38,7 +43,6 @@ router.get('/', authMiddleware, async (req, res) => {
   try {    
     const transactions = await Transaction.find({ user: req.user.id })
       .sort({ date: -1 })
-      .limit(20);
     res.json({
       transactions
     });

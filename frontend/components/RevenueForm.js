@@ -8,6 +8,7 @@ const RevenueForm = ({ navigation  }) => {
   const [categoryError, setCategoryError] = useState("");
   const [amount, setAmount] = useState(0);
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+  const [incomeType, setIncomeType] = useState("one-time")
   const allowedCategories = [
     'transfer',
     'deposit',
@@ -36,7 +37,8 @@ const RevenueForm = ({ navigation  }) => {
         amount:Number(amount),
         type:"income",
         description:description,
-        category: category
+        category: category,
+        frequency: incomeType
       };
       console.log(transactionData)
       await postTransactions(transactionData);
@@ -78,6 +80,31 @@ const RevenueForm = ({ navigation  }) => {
         }}
       />
       {categoryError ? <Text style={styles.errorText}>{categoryError}</Text> : null}
+      {/* Income Type Selection */}
+      <View style={styles.incomeTypeContainer}>
+        <Text style={styles.sectionLabel}>Income Type</Text>
+        <View style={styles.radioGroup}>
+          <TouchableOpacity 
+            style={styles.radioOption} 
+            onPress={() => setIncomeType('one-time')}
+          >
+            <View style={styles.radioCircle}>
+              {incomeType === 'one-time' && <View style={styles.radioSelected} />}
+            </View>
+            <Text style={styles.radioLabel}>One-Time</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.radioOption} 
+            onPress={() => setIncomeType('monthly')}
+          >
+            <View style={styles.radioCircle}>
+              {incomeType === 'monthly' && <View style={styles.radioSelected} />}
+            </View>
+            <Text style={styles.radioLabel}>Monthly</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       {/* Amount Slider */}
       <Text style={styles.amountText}>Amount: ${amount}</Text>
       <View style={styles.amount_Container}>
@@ -148,6 +175,44 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       color: "#fff",
     },
+    incomeTypeContainer: {
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    color: '#fff',
+    textAlign:'center',
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    justifyContent:'center',
+    gap:50,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#0066FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioSelected: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#0066FF',
+  },
+  radioLabel: {
+    color: '#fff',
+    fontSize: 16,
+  },
     amount_Container:{
       backgroundColor:"#1E1E2D",
       borderRadius:20,

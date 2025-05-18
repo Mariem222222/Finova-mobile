@@ -49,6 +49,9 @@ const SignInScreen = ({ navigation }) => {
       Alert.alert("Error", err.response?.data?.error || 'Login failed');
     }
   };
+  const handleForgotPassword = () => {
+    navigation.navigate("ForgotPassword"); // Make sure this route exists in your navigator
+  };
 
   const handleNewUser = () => {
     navigation.navigate("SignUp");
@@ -104,6 +107,13 @@ try{
       {/* Sign IN */}
       <TouchableOpacity style={styles.button} onPress={handleSignIn}>
         <Text style={styles.buttonText}>Sign In</Text>
+      </TouchableOpacity>
+      {/* Add Forgot Password Link Here */}
+      <TouchableOpacity 
+        onPress={handleForgotPassword} 
+        style={styles.forgotPasswordContainer}
+      >
+        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
       </TouchableOpacity>
       {/* New User Sign Up */}
       <TouchableOpacity onPress={handleNewUser}>
@@ -175,6 +185,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  forgotPasswordContainer: {
+    alignSelf: 'center',
+    marginBottom: 15,
+  },
+  forgotPasswordText: {
+    color: '#007AFF',
+    fontSize: 14,
+  },
   newUserText: {
     textAlign: "center",
     color: "#fff",
@@ -184,6 +202,7 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontWeight: "bold",
   },
+
 });
 
 export default SignInScreen;

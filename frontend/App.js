@@ -24,6 +24,8 @@ import AddBudget from "./components/AddBudget";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 import ModifierBudget from "./components/ModifierBudget";
 import NotificationPage from "./components/NotificationPage";
+import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
+import ResetPasswordScreen from "./screens/ResetPasswordScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -161,6 +163,18 @@ export default function App() {
         name="Notifications" 
         component={NotificationPage}
         options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPasswordScreen}
+          options={{ headerShown: false }}
+        />
+        
+        <Stack.Screen
+          name="ResetPassword"
+          component={ResetPasswordScreen}
+          options={{ headerShown: false }}
+        />
 
       </Stack.Navigator>
      

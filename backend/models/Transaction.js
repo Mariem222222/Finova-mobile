@@ -28,6 +28,17 @@ const TransactionSchema = new mongoose.Schema({
     type: String,
     enum: ['transfer', 'payment', 'deposit', 'withdrawal', 'purchase'],
     default: 'payment'
+  },
+  frequency: { 
+    type: String, 
+    enum: ['one-time', 'monthly'], 
+    default: 'one-time' 
+  },
+  nextPaymentDate: {
+    type:Date
+  },
+  isActive: { 
+    type: Boolean, default: true 
   }
 });
 

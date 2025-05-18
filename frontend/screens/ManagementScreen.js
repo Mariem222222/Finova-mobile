@@ -13,12 +13,14 @@ useEffect(() => {
   if (isFocused) {
   const handlefetchBudgets = async () => {
   try{
+    setLoading(true);
   const data = await fetchBudgets();
    const userData = await getUserInfo();
-  data.currentAmount=userData.balance;
-  console.log("fetched data : ",data)
-
-    setBudgets(data);
+  const budgetsWithUserData = data.budgets.map(budget => ({
+  ...budget,
+  currentAmount: userData.balance // Or appropriate property
+}));
+setBudgets(budgetsWithUserData);
     setLoading(false);
   } catch (err) {
     setError(err.message);
@@ -28,23 +30,6 @@ useEffect(() => {
   handlefetchBudgets();
 }}, [isFocused]);
 
-
-
-// const handleUpdateBudget = async (updatedBudget) => {
-//   try {
-//     const response = await fetch(`http://localhost:5000/api/budgets/${updatedBudget._id}`, {
-//       method: 'PUT',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify(updatedBudget),
-//     });
-//     if (!response.ok) throw new Error('Failed to update budget');
-//     const data = await response.json();
-//     setBudgets(budgets.map(b => b._id === data._id ? data : b));
-//   } catch (err) {
-//     console.error('Error updating budget:', err);
-//     setError(err.message);
-//   }
-// };
 const handleDeleteBudget = (budgetId) => {
   // Frontend-only deletion
   setBudgets(prevBudgets => prevBudgets.filter(b => b._id !== budgetId));

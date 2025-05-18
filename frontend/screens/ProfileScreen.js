@@ -1,9 +1,10 @@
 import React, { useState,useEffect } from "react";
 import Profile from "../components/Profile";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity,ActivityIndicator  } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity,ActivityIndicator,Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; 
 import { useIsFocused } from '@react-navigation/native';
-import { getUserInfo } from '../api/index'; 
+import { getUserInfo, deleteUser } from '../api/index';
+import AsyncStorage from '@react-native-async-storage/async-storage';
   
 
 const ProfileScreen = ({ navigation }) => {
@@ -11,6 +12,7 @@ const ProfileScreen = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
    useEffect(() => {
       if (isFocused) { 
         const fetchdata = async () => {
@@ -23,7 +25,53 @@ const ProfileScreen = ({ navigation }) => {
                 setLoading(false);
               };fetchdata()}
             }, [isFocused]);
-             if (loading) {
+        const handleDeleteProfile = async () => {
+    Alert.alert(
+      "Confirmation",
+      "Êtes-vous sûr de vouloir supprimer définitivement votre profil ? Cette action est irréversible.",
+      [
+        {
+          text: "Annuler",
+          style: "cancel"
+        },
+        { 
+          text: "Supprimer", 
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              // Appel à l'API de suppression
+              await deleteUser(); 
+              // Suppression des données locales
+              await AsyncStorage.multiRemove(['userToken', 'userData']);
+              
+              // Redirection vers l'écran de login
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }],
+              });
+            } catch (error) {
+              Alert.alert('Erreur', error.message || 'Échec de la suppression du profil');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+        const handleLogout = async () => {
+    try {
+      await AsyncStorage.multiRemove(['userToken', 'userData']);
+      // Redirect to Login screen and clear navigation stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SignIn' }],
+      });
+    } catch (error) {
+      Alert.alert('Logout Error', 'Failed to logout. Please try again.');
+    }
+  };
+             if (loading|| isDeleting) {
                     return (
                       <View style={[styles.container, styles.center]}>
                         <ActivityIndicator size="large" color="#4ECDC4" />
@@ -80,6 +128,21 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.optionText}>Settings</Text>
           <Icon name="arrow-forward-ios" size={20} color="#fff" />
         </TouchableOpacity>
+        {/* Bouton de déconnexion */}
+        <TouchableOpacity style={styles.option} onPress={handleLogout}>
+          <Icon name="exit-to-app" size={24} color="#fff" style={styles.optionIcon} />
+          <Text style={styles.optionText}>Logout</Text>
+          <Icon name="arrow-forward-ios" size={20} color="#fff" />
+          </TouchableOpacity>
+          {/* Bouton de suppression */}
+        <TouchableOpacity 
+          style={[styles.option, styles.destructiveButton]} 
+          onPress={handleDeleteProfile}
+        >
+          <Icon name="delete-forever" size={24} color="#ff4444" style={styles.optionIcon} />
+          <Text style={[styles.optionText, styles.destructiveText]}>Delete Account</Text>
+          <Icon name="arrow-forward-ios" size={20} color="#ff4444" />
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -93,6 +156,12 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
+  },
+  destructiveButton: {
+    borderBottomColor: '#ff4444',
+  },
+  destructiveText: {
+    color: '#ff4444'
   },
   option: {
     flexDirection: 'row',

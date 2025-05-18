@@ -92,12 +92,51 @@ export const getUserInfo = async () => {
     throw error;
   }
 };
+export const deleteUser = async () => {
+  try {
+   
+    const response = await transactionsApi.delete('/user/delete-acc');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Erreur de suppression');
+  }
+};
 export const changePassword = async (passwordData) => {
   try {
     const response = await transactionsApi.put('/user/change-password', passwordData);
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message; 
+  }
+};
+export const sendResetEmail = async (data) => {
+  try {
+    const response = await transactionsApi.post('/user/forgot-password', {
+      email: data.email
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Failed to send reset email'
+    );
+  }
+};
+export const resetPassword = async (data) => {
+  try {
+    const response = await transactionsApi.post('/user/reset-password', {
+      email: data.email,
+      code: data.code,
+      newPassword: data.newPassword
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Password reset failed'
+    );
   }
 };
 export const fetchBudgets = async () => {

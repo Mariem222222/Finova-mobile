@@ -1,20 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const Budget = require('../models/Budget');
+const authMiddleware = require('../Middleware/authMiddleware');
 
 // Get all budgets
-router.get('/', async (req, res) => {
+router.get('/',authMiddleware,async (req, res) => {
   try {
-    const budgets = await Budget.find().sort({ lastUpdated: -1 });
-    res.json(budgets);
+    const budgets = await Budget.find({ user: req.user.id })
+          .sort({ date: -1 })
+        res.json({
+          budgets
+        });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 // Create new budget
-router.post('/', async (req, res) => {
+router.post('/',authMiddleware, async (req, res) => {
   const budget = new Budget({
+    user: req.user.id,
     title: req.body.title,
     currentAmount: req.body.currentAmount,
     targetAmount: req.body.targetAmount,
