@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image } from "react-native";
 import CustomSlider from "../helper/CustomSlider"
 import { postTransactions } from '../api/index';
-
+import { Picker } from '@react-native-picker/picker';
 const ExpenseForm = ({ navigation }) => {
- const [description, setDescription] = useState("");
-   const [category, setCategory] = useState("");
-   const [categoryError, setCategoryError] = useState("");
-   const [amount, setAmount] = useState(0);
-   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
-   const allowedCategories = [
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [interval, setInterval] = useState("monthly");
+  const [showIntervalInfo, setShowIntervalInfo] = useState(false);
+  const allowedCategories = [
      'transfer',
      'payment',
      'withdrawal',
@@ -39,7 +42,9 @@ const ExpenseForm = ({ navigation }) => {
          amount:Number(amount),
          type:"expense",
          description:description,
-         category: category
+         category: category,
+         isRecurring: isRecurring,
+        interval: isRecurring ? interval : undefined,
        };
        console.log(transactionData)
        await postTransactions(transactionData);
@@ -78,7 +83,50 @@ const ExpenseForm = ({ navigation }) => {
           validateCategory(text);
         }}
       />
-
+      {/* Recurring Section */}
+            <View style={styles.section}>
+              <TouchableOpacity 
+                style={styles.recurringContainer}
+                onPress={() => setIsRecurring(!isRecurring)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.checkbox}>
+                  {isRecurring && <View style={styles.checkboxInner} />}
+                </View>
+                <View style={styles.labelContainer}>
+                  <Text style={styles.labelText}>Periodic</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowIntervalInfo(!showIntervalInfo)}
+                    style={styles.infoIcon}
+                  >
+                    <Text style={styles.infoIconText}>ⓘ</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+      
+              {showIntervalInfo && (
+                <Text style={styles.tooltip}>
+                  Enable for recurring transactions (e.g., monthly subscriptions)
+                </Text>
+              )}
+      
+              {isRecurring && (
+                <View style={styles.intervalContainer}>
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                     selectedValue={interval}
+                    onValueChange={(itemValue) => setInterval(itemValue)}
+                    style={styles.picker}
+                    mode="dropdown"
+                    >
+                    <Picker.Item label="Daily" value="daily" />
+                    <Picker.Item label="Weekly" value="weekly" />
+                    <Picker.Item label="Monthly" value="monthly" />
+                    </Picker>
+                  </View>
+                </View>
+              )}
+            </View>
      {/* Amount Slider */}
      <Text style={styles.amountText}>Amount: ${amount.toFixed(2)}</Text>
       <View style={styles.amount_Container}>
@@ -147,6 +195,68 @@ const styles = StyleSheet.create({
     borderColor: "#333333",
     marginBottom: 20,
     color: "#fff",
+  },
+  recurringContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1E1E2D',
+  },
+  checkboxInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+    backgroundColor: '#0066FF',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  labelText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  infoIcon: {
+    marginLeft: 4,
+  },
+  tooltip: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    color: '#374151',
+    marginTop: 4,
+  },
+  intervalContainer: {
+    marginTop: 10,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+    borderRadius: 12,
+    backgroundColor: '#f5f3ff',
+  },
+  picker: {
+    height: 48,
+    color: '#374151',
+  },
+   infoIconText: {
+    color: '#60a5fa',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   amount_Container:{
     backgroundColor:"#1E1E2D",

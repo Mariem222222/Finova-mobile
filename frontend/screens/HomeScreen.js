@@ -25,7 +25,7 @@ const HomeScreen = () => {
           const userData = await getUserInfo();
           const formattedTransactions = response.transactions.map(tx => ({
             ...tx,
-            amount: tx.type === 'revenue' ? tx.amount : -tx.amount,
+            amount: tx.type === 'income' ? tx.amount : -tx.amount,
           }));
           setName(userData.name|| 'Unknown'); 
           setbalance(userData.balance|| 'N/A');
@@ -97,7 +97,7 @@ const HomeScreen = () => {
           <Text style={styles.subText}>Current Balance</Text>
         </View>
         <View style={styles.first_container_scan}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('InvoiceScanner')}>
             <View style={styles.Second_Container_scan}>
               <Image source={require("../assets/add.png")} style={styles.add_img} />
               <Text style={styles.scanButtonText}>Scan Invoice</Text>

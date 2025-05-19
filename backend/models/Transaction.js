@@ -29,17 +29,10 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['transfer', 'payment', 'deposit', 'withdrawal', 'purchase'],
     default: 'payment'
   },
-  frequency: { 
-    type: String, 
-    enum: ['one-time', 'monthly'], 
-    default: 'one-time' 
-  },
-  nextPaymentDate: {
-    type:Date
-  },
-  isActive: { 
-    type: Boolean, default: true 
-  }
+  isRecurring: { type: Boolean, default: false },
+  interval: { type: String, enum: ["daily", "weekly", "monthly","yearly"] },
+  nextRun: { type: Date },
+  active: { type: Boolean, default: true }
 });
 
 // Add virtual for formatted date

@@ -10,10 +10,22 @@
     "splash": {
       "image": "./assets/logo1.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+      "backgroundColor": "#ffffff"},
+      "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to your photos to scan invoices"
+        }
+      ]
+    ]
+      },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow access to camera to scan invoices",
+        "NSPhotoLibraryUsageDescription": "Allow access to photos to select invoices"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -21,6 +33,11 @@
       "favicon": "./assets/images/favicon.png"
     },
     "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo1.png",
         "backgroundColor": "#ffffff"
@@ -28,4 +45,4 @@
     }
    
   }
-}
+

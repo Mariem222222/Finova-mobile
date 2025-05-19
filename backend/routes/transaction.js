@@ -3,35 +3,63 @@ const router = express.Router();
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const authMiddleware =require('../Middleware/authMiddleware');
+const calculateNextRun =require('../helper/calculateNextRun')
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { amount, type, description, category,frequency } = req.body;
+    const { amount, type, description, category, isRecurring, interval } = req.body;
+    
+    // Validate required fields
     if (!amount || !type || !description) {
-      console.error('Validation failed: Missing required fields');
-      return res.status(401).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Missing required fields: amount, type, description' });
     }
-     if (!['one-time', 'monthly'].includes(frequency)) {
-      return res.status(400).json({ error: 'Invalid frequency' });
+
+    // Additional validations for recurring transactions
+    if (isRecurring) {
+      if (!interval) {
+        return res.status(400).json({ error: 'Recurring transactions require  interval' });
+      }
+      
+      const parsedDate = new Date(Date.now());
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid dateTime format' });
+      }
+
+      const validIntervals = ['daily', 'weekly', 'monthly'];
+      if (!validIntervals.includes(interval)) {
+        return res.status(400).json({ error: 'Invalid interval. Use daily, weekly, or monthly' });
+      }
     }
+
+    // Calculate nextRun if recurring
+    let nextRunDate;
+    if (isRecurring) {
+      const parsedDateTime = new Date(Date.now());
+      nextRunDate = calculateNextRun(parsedDateTime, interval);
+    }
+
+    // Create transaction
     const transaction = new Transaction({
       user: req.user.id,
-      amount:amount,
-      type:type,
-      description:description,
-      category:category,
-      frequency,
-      nextPaymentDate: frequency === 'monthly' ? 
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null
+      amount,
+      type,
+      description,
+      category,
+      isRecurring: isRecurring || false,
+      interval: isRecurring ? interval : undefined,
+      nextRun: isRecurring ? nextRunDate : undefined,
+      active: isRecurring ? true : undefined,
+      date: new Date(Date.now()) 
     });
 
+    // Update user balance and save transaction
     const user = await User.findById(req.user.id);
     user.balance += type === "income" ? amount : -amount;
     await transaction.save();
-    console.log(`Transaction saved with ID: ${transaction._id}`);
+    
     user.transactions.push(transaction);
     await user.save();
-    console.log('User record updated with new transaction');
+    
     res.status(201).json(transaction);
   } catch (err) {
     console.error(`[ERROR] Transaction creation failed: ${err.message}`);
