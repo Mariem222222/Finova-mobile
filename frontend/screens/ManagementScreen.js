@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image,ActivityIndicator } from "react-native";
-import Icon from 'react-native-vector-icons/Ionicons'; 
-import {fetchBudgets} from '../api/index';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator } from "react-native";
+import Icon from 'react-native-vector-icons/Ionicons';
+import { fetchBudgets } from '../api/index';
+import { deleteBudget } from '../api/index';
 import { useIsFocused } from '@react-navigation/native';
-import { getUserInfo } from '../api/index'; 
+
 const ManagementScreen = ({ navigation }) => {
   const [budgets, setBudgets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const isFocused = useIsFocused();
-useEffect(() => {
-  if (isFocused) {
-  const handlefetchBudgets = async () => {
-  try{
-    setLoading(true);
-  const data = await fetchBudgets();
-   const userData = await getUserInfo();
-  const budgetsWithUserData = data.budgets.map(budget => ({
-  ...budget,
-  currentAmount: userData.balance // Or appropriate property
-}));
-setBudgets(budgetsWithUserData);
-    setLoading(false);
-  } catch (err) {
-    setError(err.message);
-    setLoading(false);
-  }
-}
-  handlefetchBudgets();
-}}, [isFocused]);
 
-const handleDeleteBudget = (budgetId) => {
-  // Frontend-only deletion
-  setBudgets(prevBudgets => prevBudgets.filter(b => b._id !== budgetId));
+  // Trouver le budget prioritaire
+  const priorityBudget = budgets.find(b => b.priority === 1);
+  const remainingBudgets = budgets.filter(b => b.priority !== 1);
+
+  useEffect(() => {
+    if (isFocused) {
+      const handlefetchBudgets = async () => {
+        try {
+          setLoading(true);
+          const data = await fetchBudgets();
+          setBudgets(data.sort((a, b) => a.priority - b.priority));
+          setLoading(false);
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+      handlefetchBudgets();
+    }
+  }, [isFocused]);
+ const handleDeleteBudget = async (budgetId) => {
+  try {
+    setLoading(true);
+    await deleteBudget(budgetId);
+    // Refresh the list after successful deletion
+    const data = await fetchBudgets();
+    setBudgets(data.sort((a, b) => a.priority - b.priority));
+    setLoading(false);
+  } catch (error) {
+    setLoading(false);
+    Alert.alert('Error', 'Failed to delete budget. Please try again.');
+    console.error('Deletion error:', error);
+  }
 };
       const navigateToAddBudget = () => {
         navigation.navigate("AddBudget")
@@ -41,7 +52,11 @@ const handleDeleteBudget = (budgetId) => {
         navigation.navigate("ModifierBudget", { budget: budget });
       };
 
-      const getIconForBudget = (title) => {
+
+  const calculateProgress = (current, target) => {
+    return target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  };
+  const getIconForBudget = (title) => {
         switch (title) {
           case "Achat Immobilier":
             return require('../assets/house.png'); 
@@ -55,90 +70,116 @@ const handleDeleteBudget = (budgetId) => {
             return require('../assets/revenue.png'); 
         }
       };
-      if (loading) {
-        return (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
-          </View>
-        );
-      }
+
+  const calculateTimeLeft = (targetDate) => {
+    const now = new Date();
+    const target = new Date(targetDate);
+    const diff = target - now;
+
+    if (diff < 0) return "Expired";
     
-      if (error) {
-        return (
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorText}>Error: {error}</Text>
-            <TouchableOpacity onPress={fetchBudgets}>
-              <Text style={styles.retryText}>Réessayer</Text>
-            </TouchableOpacity>
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return `${days}d ${hours}h left`;
+  };
+
+  const renderBudgetCard = (budget, isPriority = false) => {
+    const progress = calculateProgress(budget.currentAmount, budget.targetAmount);
+    const timeLeft = calculateTimeLeft(budget.targetDate);
+
+    return (
+      <View key={budget._id} style={[styles.card, isPriority && styles.priorityCard]}>
+        <View style={styles.cardHeader}>
+          <Image source={getIconForBudget(budget.title)} style={styles.budgetIcon} />
+          <View>
+            <Text style={styles.cardTitle}>{budget.title}</Text>
+            <Text style={styles.cardSubtitle}>{budget.type}</Text>
           </View>
-        );
-      }
-      return (
-        <ScrollView style={styles.container}>
-      {/* Header  */}
-          {/* Budget/Saving Cards */}
-          {budgets.map((budget,index) => (
-            <View key={index} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Image source={getIconForBudget(budget.title)} style={styles.budgetIcon} />
-                <View>
-                  <Text style={styles.cardTitle}>{budget.title}</Text>
-                  <Text style={styles.cardSubtitle}>{budget.type}</Text>
-                </View>
-                <View style={styles.lastUpdatedContainer}>
-                <TouchableOpacity 
-                    onPress={() => handleDeleteBudget(budget._id)}
-                    style={styles.deleteButton}
-                    >
-                  <Icon name="close-outline" size={20} color="#FF6B6B" />
-                  </TouchableOpacity>
-                  <Text style={styles.lastUpdatedText}>last Updated {budget.lastUpdated}</Text>
-                  <Text style={styles.amountText}>${budget.currentAmount}</Text>
-                </View>
-              </View>
-              {/* Progress Bar */}
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    { width: `${(Math.min(budget.currentAmount, budget.targetAmount) / budget.targetAmount) * 100}%` },
-                  ]}
-                  />
-              </View>
+          <View style={styles.lastUpdatedContainer}>
+            <TouchableOpacity onPress={() => handleDeleteBudget(budget._id)} style={styles.deleteButton}>
+              <Icon name="close-outline" size={20} color="#FF6B6B" />
+            </TouchableOpacity>
+            <Text style={styles.lastUpdatedText}>Last updated: {new Date(budget.lastUpdated).toLocaleDateString()}</Text>
+            <Text style={styles.amountText}>${budget.currentAmount.toFixed(2)}</Text>
+          </View>
+        </View>
 
-              {/* Amounts */}
-              <View style={styles.amountContainer}>
-                <Text style={styles.amountStartText}>$0</Text>
-                <Text style={styles.amountEndText}>${budget.targetAmount}</Text>
-              </View>
+         {/* Progress Bar Fix */}
+        <View style={styles.progressWrapper}>
+           <Text style={styles.progressText}>{progress.toFixed(0)}%</Text>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill, 
+                { 
+                  width: `${progress}%`,
+                  backgroundColor: isPriority ? '#34D399' : '#73F59F'
+                }
+              ]}
+            />
+          </View>
+        </View>
 
-              {/* Description with icon */}
-              <View style={styles.descriptionContainer}>
-                <Icon name="warning-outline" size={16} color="#9370DB" />
-                <Text style={styles.description}>{budget.description}</Text>
-              </View>
+        <View style={styles.amountContainer}>
+          <Text style={styles.amountStartText}>$0</Text>
+          <Text style={styles.amountEndText}>${budget.targetAmount.toFixed(2)}</Text>
+        </View>
 
-              {/* Modify Button */}
-              <TouchableOpacity
-                style={styles.modifyButton}
-                onPress={() => navigateToModifyBudget(budget)}
-                >
-                <Text style={styles.modifyButtonText}>Modify</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-
-          {/* Add Button */}
+        <View style={styles.footerContainer}>
+          <View style={styles.timeLeftBadge}>
+            <Icon name="time-outline" size={14} color="#9370DB" />
+            <Text style={styles.timeLeftText}>{timeLeft}</Text>
+          </View>
+          <View style={styles.statusLeftBadge}>
+            <Icon name="time-outline" size={14} color="#9370DB" />
+            <Text style={styles.timeLeftText}>
+              {budget.status === 'pending' ? 'Pending' : 'Expiré'}
+              </Text>
+            {/* <Text style={styles.timeLeftText}>{timeLeft}</Text> */}
+          </View>
           <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => navigateToAddBudget(null)}
-            >
-            <Text style={styles.addButtonText}>Add +</Text>
+            style={[styles.modifyButton, isPriority && styles.priorityButton]}
+            onPress={() => navigateToModifyBudget(budget)}>
+            <Text style={styles.modifyButtonText}>Modify</Text>
           </TouchableOpacity>
-        </ScrollView>
-      );
-    };
+        </View>
+      </View>
+    );
+  };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+        <TouchableOpacity onPress={fetchBudgets}>
+          <Text style={styles.retryText}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {priorityBudget && renderBudgetCard(priorityBudget, true)}
+      
+      {remainingBudgets.map(budget => renderBudgetCard(budget))}
+
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigateToAddBudget()}>
+        <Text style={styles.addButtonText}>Add +</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -155,6 +196,82 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 4,
   },
+   priorityCard: {
+    borderWidth: 2,
+    borderColor: '#34D399',
+    marginBottom: 24
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+   progressWrapper: {
+    marginVertical: 12,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#2D2D3A',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressPercentage: {
+    position: 'absolute',
+    right: 10,
+    top: -2,
+    color: '#FFF',
+    fontSize: 12,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  timeLeftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  progressText: {
+    color: '#73F59F',
+    fontSize: 12,
+    marginBottom:10,
+    fontWeight: '500'
+  },
+  statusLeftBadge: {
+    flexDirection: 'row',
+    alignItems: 'left',
+    backgroundColor: '#2E2E3D',
+    padding: 6,
+    borderRadius: 20,
+    
+  },
+  timeLeftBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2E2E3D',
+    padding: 6,
+    borderRadius: 20,
+    gap: 2
+  },
+  timeLeftText: {
+    color: '#9370DB',
+    fontSize: 12
+  },
+  footerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12
+  },
+  priorityButton: {
+    backgroundColor: '#34D399'
+  },
   card: {
     backgroundColor: "#1E1E2D", 
     borderRadius: 10, 
@@ -165,7 +282,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+
   },
   amountText:{
     color:"#02BC77",
@@ -233,6 +350,7 @@ const styles = StyleSheet.create({
   modifyButton: {
     backgroundColor: "#007AFF", 
     paddingVertical: 10,
+    paddingHorizontal:10,
     borderRadius: 5,
     alignItems: "center",
   },
@@ -247,12 +365,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     paddingVertical: 16,
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 35,
   },
   addButtonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+   center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

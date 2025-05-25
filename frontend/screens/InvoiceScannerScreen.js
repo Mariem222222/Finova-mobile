@@ -177,6 +177,11 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   galleryButton: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.3)',

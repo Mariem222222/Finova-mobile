@@ -126,6 +126,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   buttonText: {
     color: "#fff",
     fontSize: 16,

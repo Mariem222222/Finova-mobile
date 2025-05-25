@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const authApi = axios.create({
-  //for android device put your computer address ip  (http://172.16.54.243:3000/api)
+  //for android device put your computer address ip  (http://172.16.50.153:3000/api)
   //ipconfig
   //for android emulator put this adress (http://10.0.2.2:3000/api/auth)
   baseURL: 'http://10.0.2.2:3000/api/auth',
@@ -172,6 +172,31 @@ export const getFinancialRecommendation = async () => {
     return [];
   }
 };
+export const getCurrentSavings = async () => {
+  try {
+    const response = await transactionsApi.get('budgets/current-savings');
+    return response.data
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const getCurrentExpenses = async () => {
+  try {
+    const response = await transactionsApi.get('transaction/current-expenses');
+    return response.data
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+export const deleteBudget = async (budgetId) => {
+  try {
+    const response = await transactionsApi.delete(`/budgets/${budgetId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};
+
 
 
 

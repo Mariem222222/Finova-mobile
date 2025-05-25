@@ -60,6 +60,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: 'center',
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default ManualEntryScreen;

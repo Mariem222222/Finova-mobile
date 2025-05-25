@@ -113,16 +113,6 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.optionText}>History</Text>
           <Icon name="arrow-forward-ios" size={20} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Icon name="eco" size={24} color="#fff" style={styles.optionIcon} />
-          <Text style={styles.optionText}>Best consumption practice</Text>
-          <Icon name="arrow-forward-ios" size={20} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Icon name="location-on" size={24} color="#fff" style={styles.optionIcon} />
-          <Text style={styles.optionText}>Address</Text>
-          <Icon name="arrow-forward-ios" size={20} color="#fff" />
-        </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={() => navigation.navigate('Settings')}>
           <Icon name="settings" size={24} color="#fff" style={styles.optionIcon} />
           <Text style={styles.optionText}>Settings</Text>
@@ -162,6 +152,11 @@ const styles = StyleSheet.create({
   },
   destructiveText: {
     color: '#ff4444'
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   option: {
     flexDirection: 'row',

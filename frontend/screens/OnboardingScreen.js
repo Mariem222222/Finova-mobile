@@ -103,6 +103,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "98%", 
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   buttonText: {
     color: "#FFFFFF", 
     fontSize: 16,

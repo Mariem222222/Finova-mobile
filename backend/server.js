@@ -30,3 +30,17 @@ const PORT = 3000;
 app.listen(PORT,'0.0.0.0',() => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// // objectivs check
+// const cron = require('node-cron');
+// const { processOldestGoal } = require('./services/savingsGoalProcessor');
+
+// // Exécute toutes les heures
+// cron.schedule('0 * * * *', async () => {
+//   console.log('Début du traitement des objectifs...');
+//   try {
+//     await processOldestGoal();
+//   } catch (error) {
+//     console.error('Erreur critique dans le cron job:', error);
+//   }
+// });

@@ -5,6 +5,39 @@ const User = require('../models/User');
 const authMiddleware =require('../Middleware/authMiddleware');
 const calculateNextRun =require('../helper/calculateNextRun')
 
+
+// Function to calculate current expenses for a user
+const calculateCurrentExpenses = async (userId) => {
+  try {
+    const transactions = await Transaction.find({ userId });
+
+    const totalExpenses = transactions.reduce((acc, transaction) => {
+      // Check if the transaction is an expense (adjust 'type' based on your data model)
+      if (transaction.type === 'expense') {
+        return acc + parseFloat(transaction.amount);
+      }
+      return acc;
+    }, 0);
+
+    return totalExpenses;
+  } catch (error) {
+    console.error("Error calculating current expenses:", error);
+    throw new Error("Error calculating current expenses");
+  }
+};
+// Define the route to get current expenses
+router.get("/current-expenses", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const currentExpenses = await calculateCurrentExpenses(userId);
+    res.status(200).json({ currentExpenses });
+  } catch (error) {
+    console.error("Error getting current expenses:", error);
+    res.status(500).json({ error: error.message || "Failed to get current expenses" });
+  }
+});
+  
+
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { amount, type, description, category, isRecurring, interval } = req.body;

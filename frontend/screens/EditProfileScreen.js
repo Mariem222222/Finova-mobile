@@ -98,40 +98,11 @@ const EditProfileScreen = ({ navigation }) => {
         />
       </View>
 
-      {/* Birth Date */}
-      <View style={styles.section}>
-        <Text style={styles.label}>Birth Date</Text>
-        <View style={styles.birthDateContainer}>
-          <TextInput
-            style={[styles.input, styles.birthDateInput]}
-            value={day}
-            onChangeText={setDay}
-            placeholder="Day"
-            keyboardType="numeric"
-            maxLength={2}
-          />
-          <TextInput
-            style={[styles.input, styles.birthDateInput]}
-            value={month}
-            onChangeText={setMonth}
-            placeholder="Month"
-            maxLength={9}
-          />
-          <TextInput
-            style={[styles.input, styles.birthDateInput]}
-            value={year}
-            onChangeText={setYear}
-            placeholder="Year"
-            keyboardType="numeric"
-            maxLength={4}
-          />
-        </View>
-      </View>
 
       {/* Joined Date */}
       <View style={styles.section}>
-        <Text style={styles.label}>Joined</Text>
-        <Text style={styles.joinedDate}>28 Jan 2021</Text>
+        <Text style={styles.label}>All Users Infos are secured <Text style={styles.infoIconText}>ⓘ</Text> </Text>
+        
       </View>
 
       {/* Save Button */}
@@ -174,6 +145,12 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#161622',
   },
+  infoIconText: {
+    color: '#60a5fa',
+    fontSize: 16,
+    fontWeight: 'bold',
+    
+  },
   welcomeText: {
     fontSize: 16,
     color: '#666',
@@ -182,6 +159,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 20,
+    textAlign:'center',
     color: '#fff',
   },
   section: {
@@ -212,6 +190,11 @@ const styles = StyleSheet.create({
   joinedDate: {
     fontSize: 16,
     color: '#666',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   saveButton: {
     backgroundColor: '#007BFF',

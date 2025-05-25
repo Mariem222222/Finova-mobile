@@ -23,10 +23,11 @@ const StatisticsScreen = () => {
   const { width } = useWindowDimensions();
    const [Name,setName]=useState("jawhar");
    const isFocused = useIsFocused();
-   const [error, setError] = useState(null);
    const [loading, setLoading] = useState(true);
   const [recommendation, setRecommendation] = useState([]);
+  const [error, setError] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [monthlyData, setMonthlyData] = useState({ months: [], seriesData: [] });
 useEffect(() => {
   if (isFocused) { 
     const fetchData = async () => {
@@ -34,6 +35,13 @@ useEffect(() => {
         setLoading(true);
         const userData = await getUserInfo();
         setName(userData.name || 'Unknown');
+         const transactionsResponse = await getTransactions();
+         console.log(transactionsResponse)
+          if (!transactionsResponse?.transactions) {
+            throw new Error('Failed to fetch transactions');
+          }
+        const processed = processTransactions(transactionsResponse.transactions);
+          setMonthlyData(processed);
           setIsAnalyzing(true);
           const analysis = await getFinancialRecommendation();
           console.log(analysis)
@@ -51,21 +59,64 @@ useEffect(() => {
     fetchData();
   }
 }, [isFocused]);
-                  if (loading) {
-                         return (
-                           <View style={[styles.container, styles.center]}>
-                             <ActivityIndicator size="large" color="#4ECDC4" />
-                           </View>
-                         );
-                       }
+const processTransactions = (transactions) => {
+    // Generate last 6 months
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(`${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`);
+    }
+    if (!Array.isArray(transactions)) {
+      console.warn('Transactions data is not an array:', transactions);
+      return { months: [], seriesData: [] };
+    }
+    const monthlySummary = {};
+    months.forEach(monthYear => {
+      monthlySummary[monthYear] = {
+        Savings: 0,
+        Spending: 0,
+        Investments: 0,
+        Goals: 0,
+      };
+    });
+
+    // Populate data
+    transactions.forEach(transaction => {
+      const date = new Date(transaction.date);
+      const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+      
+      if (monthlySummary[monthYear] && transaction.category in monthlySummary[monthYear]) {
+        monthlySummary[monthYear][transaction.category] += Math.abs(transaction.amount);
+      }
+    });
+
+    // Prepare series data
+    const categories = ['Savings', 'Spending', 'Investments', 'Goals'];
+    const seriesData = categories.map(category => 
+      months.map(monthYear => monthlySummary[monthYear][category])
+    );
+
+    return {
+      months: months.map(m => m.split(' ')[0]),
+      seriesData,
+    };
+  };
+    if (loading) {
+      return (
+      <View style={[styles.container, styles.center]}>
+      <ActivityIndicator size="large" color="#4ECDC4" />
+      </View>
+      );
+      }
                      
-                       if (error) {
-                         return (
-                           <View style={[styles.container, styles.center]}>
-                             <Text style={styles.errorText}>Error: {error}</Text>
-                           </View>
-                         );
-                       }
+    if (error) {
+    return (
+      <View style={[styles.container, styles.center]}>
+      <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+          );
+        }
 const getCategoryColor = (category) => {
   const categoryColors = {
     'Savings': '#4ECDC4',
@@ -91,7 +142,7 @@ const getCategoryColor = (category) => {
     },
     xAxis: {
       type: "category",
-      data: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+      data: monthlyData.months,
       axisLabel: {
         color: "#fff",
         fontSize: 40,
@@ -107,7 +158,7 @@ const getCategoryColor = (category) => {
     },
     series: [
       {
-        data: [25, 19, 20, 21, 16, 15],
+        data: monthlyData.seriesData[0] || [],
         type: "line",
         smooth: true,
         lineStyle: {
@@ -116,7 +167,7 @@ const getCategoryColor = (category) => {
         },
       },
       {
-        data: [15, 5, 10, 31, 36, 30],
+        data: monthlyData.seriesData[1] || [],
         type: "line",
         smooth: true,
         lineStyle: {
@@ -125,7 +176,7 @@ const getCategoryColor = (category) => {
         },
       },
       {
-        data: [20, 25, 35, 31, 26, 24],
+        data: monthlyData.seriesData[2] || [],
         type: "line",
         smooth: true,
         lineStyle: {
@@ -134,7 +185,7 @@ const getCategoryColor = (category) => {
         },
       },
       {
-        data: [10, 15, 25, 21, 10, 9],
+        data: monthlyData.seriesData[3] || [],
         type: "line",
         smooth: true,
         lineStyle: {
@@ -399,6 +450,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 50,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text_icon:{
     color:"#fff",

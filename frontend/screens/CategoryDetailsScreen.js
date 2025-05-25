@@ -172,6 +172,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   transactionDescription: {
     fontSize: 14,
     color: "#fff",

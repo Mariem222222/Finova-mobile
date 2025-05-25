@@ -1,147 +1,205 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal,Image  } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Image, ActivityIndicator } from "react-native";
 import CustomSlider from "../helper/CustomSlider";
-import {ModifyBudget} from '../api/index';
+import { ModifyBudget } from '../api/index';
+import { Picker } from "@react-native-picker/picker";
 
 const ModifierBudget = ({ navigation, route }) => {
   const { budget } = route.params || {};
+  const initialDate = budget?.targetDate ? new Date(budget.targetDate) : new Date();
+  
+  // États pour la gestion des dates
+  const [day, setDay] = useState(initialDate.getDate().toString());
+  const [month, setMonth] = useState((initialDate.getMonth() + 1).toString());
+  const [year, setYear] = useState(initialDate.getFullYear().toString());
+
+  // État global du formulaire
+  const [formData, setFormData] = useState({
+    title: budget?.title || '',
+    targetAmount: budget?.targetAmount?.toString() || '0',
+    currentAmount: budget?.currentAmount?.toString() || '0',
+    type: budget?.type || '',
+    description: budget?.description || '',
+    priority: budget?.priority?.toString() || '1'
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-  title: budget?.title || '',
-  currentAmount: budget?.currentAmount || 0,
-  targetAmount: budget?.targetAmount || 0,
-  type: budget?.type || '',
-  description: budget?.description || '',
-  });
   const [isSuccessPopupVisible, setIsSuccessPopupVisible] = useState(false);
+
+  // Validation de la date
+  const validateDate = () => {
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    
+    if (isNaN(dayNum)) return "Jour invalide";
+    if (isNaN(monthNum)) return "Mois invalide";
+    if (isNaN(yearNum)) return "Année invalide";
+    
+    const newDate = new Date(yearNum, monthNum - 1, dayNum);
+    if (isNaN(newDate.getTime())) return "Date invalide";
+    
+    const currentDate = new Date();
+    if (newDate <= currentDate) return "La date doit être dans le futur";
+    
+    return null;
+  };
+
+  // Soumission du formulaire
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
+
+    // Validation
+    const dateError = validateDate();
+    if (dateError) {
+      setError(dateError);
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.title || !formData.targetAmount) {
+      setError("Veuillez remplir les champs obligatoires");
+      setLoading(false);
+      return;
+    }
+
     try {
       const updatedBudget = {
         ...budget,
         ...formData,
+        targetAmount: parseFloat(formData.targetAmount),
+        currentAmount: parseFloat(formData.currentAmount),
+        priority: parseInt(formData.priority, 10),
+        targetDate: new Date(
+          parseInt(year, 10),
+          parseInt(month, 10) - 1,
+          parseInt(day, 10)
+        ).toISOString(),
         lastUpdated: new Date().toISOString()
       };
 
-      // Call the update callback from parent
-      const newBudget = await ModifyBudget(updatedBudget);
-      console.log("budget updated to : ",newBudget)
-      
+      await ModifyBudget(updatedBudget);
       setIsSuccessPopupVisible(true);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  
   };
 
   const closePopup = () => {
     setIsSuccessPopupVisible(false);
-    navigation.goBack(); 
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-       Modify The Budget
-      </Text>
+      <Text style={styles.title}>Modifier le budget</Text>
 
-      {/* Title Input */}
+      {/* Titre */}
       <TextInput
         style={styles.input}
-        placeholder="Title (Real Estate , ...)"
+        placeholder="Titre"
         value={formData.title}
-        placeholderTextColor="#888888"
         onChangeText={(text) => setFormData(prev => ({ ...prev, title: text }))}
       />
 
-      {/* Current Amount Input */}
+      {/* Type de budget */}
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={formData.type}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+          style={styles.picker}>
+          <Picker.Item label="Sélectionnez un type" value="" />
+          {["Fond d'urgence", "Vacances", "Maison", "Voiture", "Autre"].map(opt => (
+            <Picker.Item key={opt} label={opt} value={opt} />
+          ))}
+        </Picker>
+      </View>
+
+      {/* Priorité */}
       <TextInput
         style={styles.input}
-        placeholder="Current Amount"
+        placeholder="Priorité (1 = highest)"
         keyboardType="numeric"
-        value={formData.currentAmount.toString()}
-        placeholderTextColor="#888888"
-        onChangeText={(text) => {
-          const currentAmount = Number(text) || 0;
-          setFormData(prev => ({ ...prev, currentAmount }));
-        }}
+        value={formData.priority}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, priority: text }))}
       />
 
-      {/* Target Amount Input */}
+      {/* Montant actuel avec slider */}
+      <Text style={styles.amountText}>Montant actuel: ${formData.currentAmount}</Text>
+      <View style={styles.amount_Container}>
+        <CustomSlider
+          minValue={0}
+          maxValue={10000}
+          step={10}
+          value={parseFloat(formData.currentAmount) || 0}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, currentAmount: value.toString() }))}
+        />
+        <View style={styles.amountLabels}>
+          <Text style={styles.amountLabel}>$0</Text>
+          <Text style={styles.amountLabel}>$5,000</Text>
+          <Text style={styles.amountLabel}>$10,000</Text>
+        </View>
+      </View>
+
+      {/* Date cible */}
+      <View style={styles.dateInputContainer}>
+        <TextInput
+          style={styles.dateInput}
+          placeholder="JJ"
+          value={day}
+          onChangeText={setDay}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.dateInput}
+          placeholder="MM"
+          value={month}
+          onChangeText={setMonth}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.dateInput}
+          placeholder="AAAA"
+          value={year}
+          onChangeText={setYear}
+          keyboardType="numeric"
+        />
+      </View>
+
+      {/* Description */}
       <TextInput
         style={styles.input}
-        placeholder="Target Amount"
-        keyboardType="numeric"
-        placeholderTextColor="#888888"
-        value={formData.targetAmount.toString()}
-        onChangeText={(text) => {
-          const targetAmount = Number(text) || 0;
-          setFormData(prev => ({ ...prev, targetAmount }));
-        }}
-      />
-
-      {/* Type Input */}
-      <TextInput
-        style={styles.input}
-        placeholderTextColor="#888888"
-        placeholder="Type (Saving,Personal Budget)"
-        value={formData.type}
-        onChangeText={(text) => setFormData(prev => ({ ...prev, type: text }))}
-
-      />
-
-      {/* Description Input */}
-      <TextInput
-        style={styles.input}
-        placeholderTextColor="#888888"
         placeholder="Description"
         value={formData.description}
         onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
       />
 
-      {/* Amount Slider */}
-      <Text style={styles.amountText}>Amount: ${formData.currentAmount.toFixed(2)}</Text>
-      <View style={styles.amount_Container}>
-      <CustomSlider
-        minValue={0}
-        maxValue={10000}
-        step={10}
-        onValueChange={(value) => 
-          setFormData(prev => ({ ...prev, currentAmount: value }))}
-        minimumTrackTintColor="#0066FF"
-        maximumTrackTintColor="#A2A2A7"
-      />
-      <View style={styles.amountLabels}>
-        <Text style={styles.amountLabel}>$0</Text>
-        <Text style={styles.amountLabel}>$4,600</Text>
-        <Text style={styles.amountLabel}>$10,000</Text>
-      </View>
-      </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
-      {/* Submit Button */}
-      <TouchableOpacity style={styles.addButton} onPress={handleSubmit} disabled={loading}>
-        <Text style={styles.addButtonText}>Modify</Text>
+
+      <TouchableOpacity 
+        style={styles.addButton} 
+        onPress={handleSubmit}
+        disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.addButtonText}>Enregistrer les modifications</Text>
+        )}
       </TouchableOpacity>
 
-      {/* Success Popup */}
+      {/* Popup de succès */}
       <Modal
         visible={isSuccessPopupVisible}
         transparent={true}
         animationType="slide"
-        onRequestClose={closePopup}
-      >
+        onRequestClose={closePopup}>
         <View style={styles.popupContainer}>
           <View style={styles.popupContent}>
-            <Text style={styles.popupTitle}>
-            Edited Successfuly
-            </Text>
-            <Text style={styles.popupText}>
-          The budget was successfully Edited.
-            </Text>
+            <Text style={styles.popupTitle}>Modification réussie!</Text>
             <Image source={require("../assets/done.png")} style={styles.popup_image} />
             <TouchableOpacity style={styles.popupButton} onPress={closePopup}>
               <Text style={styles.popupButtonText}>OK</Text>
@@ -207,6 +265,28 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+   pickerContainer: {
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 20,
+    borderColor: '#333333',
+  },
+  picker: {
+    color: '#888888'
+  },
+  dateInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20
+  },
+  dateInput: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderColor: '#333333',
+    color: '#fff',
+    textAlign: 'center',
+    padding: 8
   },
   popupContainer: {
     flex: 1,

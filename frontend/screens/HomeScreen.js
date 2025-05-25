@@ -5,15 +5,17 @@ import Profile from '../components/Profile';
 import { getTransactions } from '../api/index'; 
 import { useIsFocused } from '@react-navigation/native';
 import { getUserInfo } from '../api/index'; 
+import {getCurrentSavings} from '../api/index';
+import {getCurrentExpenses} from '../api/index';
 
 
 const HomeScreen = () => {
   const [transactions, setTransactions] = useState([]);
   const [balance,setbalance]=useState(800);
   const [Name,setName]=useState("jawhar");
-  const [plannedBudget, setPlannedBudget] = useState(4000);
   const [actualExpenses, setActualExpenses] = useState(150);
   const [error, setError] = useState(null);
+  const [savings, setSavings] = useState(8000);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const isFocused = useIsFocused();
@@ -23,6 +25,11 @@ const HomeScreen = () => {
         try {
           const response = await getTransactions();
           const userData = await getUserInfo();
+          const saves = await getCurrentSavings();
+          const expen = await getCurrentExpenses();
+          setSavings(saves.currentSavings)
+          setActualExpenses(expen.currentExpenses)
+
           const formattedTransactions = response.transactions.map(tx => ({
             ...tx,
             amount: tx.type === 'income' ? tx.amount : -tx.amount,
@@ -110,8 +117,8 @@ const HomeScreen = () => {
           {/* Budget and Expenses Section */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statLabel}>forecasted budget</Text>
-              <Text style={styles.statValue_budget}>${plannedBudget.toFixed(2)}</Text>
+              <Text style={styles.statLabel}>Savings</Text>
+              <Text style={styles.statValue_budget}>${savings.toFixed(2)}</Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Actual Expenses</Text>
@@ -228,6 +235,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   ajoutText: {
     fontSize: 14,
