@@ -34,6 +34,7 @@ useEffect(() => {
       try {
         setLoading(true);
         const userData = await getUserInfo();
+        console.log("User Data:", userData);
         setName(userData.name || 'Unknown');
          const transactionsResponse = await getTransactions();
          console.log(transactionsResponse)

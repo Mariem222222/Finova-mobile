@@ -2,11 +2,9 @@ import React, { useState,useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView,ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Profile from '../components/Profile';
-import { getTransactions } from '../api/index'; 
+import { getTransactions, getUserInfo, getCurrentSavings, getCurrentExpenses } from '../api/index';
 import { useIsFocused } from '@react-navigation/native';
-import { getUserInfo } from '../api/index'; 
-import {getCurrentSavings} from '../api/index';
-import {getCurrentExpenses} from '../api/index';
+
 
 
 const HomeScreen = () => {
@@ -21,12 +19,21 @@ const HomeScreen = () => {
   const isFocused = useIsFocused();
   useEffect(() => {
     if (isFocused) { 
-      const fetchTransactionsData = async () => {
+      const fetchData = async () => {
         try {
-          const response = await getTransactions();
-          const userData = await getUserInfo();
-          const saves = await getCurrentSavings();
-          const expen = await getCurrentExpenses();
+        const [userData, response, saves, expen] = await Promise.all([
+          getUserInfo(),
+          getTransactions(),
+          getCurrentSavings(),
+          getCurrentExpenses()
+        ]);
+        
+        console.log("User Data:", userData);
+        console.log("Transactions:", response);
+        console.log("Savings:", saves);
+        console.log("Expenses:", expen);
+
+
           setSavings(saves.currentSavings)
           setActualExpenses(expen.currentExpenses)
 
@@ -42,7 +49,7 @@ const HomeScreen = () => {
         }
         setLoading(false);
       };
-      fetchTransactionsData()
+      fetchData()
     }
   }, [isFocused]);
     const getImageByCategory = (category) => {

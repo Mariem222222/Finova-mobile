@@ -28,8 +28,8 @@ const OnboardingScreen = ({ navigation }) => {
       >
         <OnboardingPage
           image={require("../assets/onboarding1.png")}
-          titre="Fastest Payment in the World"
-          descriptions="The most secure platform for customer payments."
+          titre="The Fortress of Secure Transactions"
+          descriptions="The most secure platform for customer."
           backgroundColor="#161622"
           titleColor="#FFFFFF"
           descriptionColor="#666"
@@ -46,8 +46,8 @@ const OnboardingScreen = ({ navigation }) => {
 
         <OnboardingPage
           image={require("../assets/onboarding3.png")}
-          titre="Built-in Security Features"
-          descriptions="Fingerprint, face recognition, and more to keep you secure."
+          titre="The Wallet of Financial Guard"
+          descriptions="Your Security, Our Priority."
           backgroundColor="#2C2C3A"
           titleColor="#00FF00"
           descriptionColor="#CCCCCC"

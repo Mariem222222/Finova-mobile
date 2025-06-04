@@ -2,6 +2,11 @@
   "expo": {
     "name": "Finova",
     "slug": "Finova",
+    "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo1.png",
@@ -13,10 +18,10 @@
       "backgroundColor": "#ffffff"},
       "plugins": [
       [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow access to your photos to scan invoices"
-        }
+        "expo-camera",
+    {
+      "cameraPermission": "Allow access to your camera"
+    } 
       ]
     ]
       },

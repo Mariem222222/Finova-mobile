@@ -31,23 +31,23 @@ const SignInScreen = ({ navigation }) => {
   };
 
   const handleSignIn = async() => {
-    // if (!validateForm()) {
-    //   Alert.alert("Validation Error", "Please fix the errors before submitting.");
-    //   return;
-    // }
+    if (!validateForm()) {
+      Alert.alert("Validation Error", "Please fix the errors before submitting.");
+      return;
+    }
 
-    // try {
-    //   const response = await loginUser({
-    //     email: email,
-    //     password: password
-    //   });
-    //   console.log(response)
+    try {
+      const response = await loginUser({
+        email: email,
+        password: password
+      });
+      console.log(response)
       Alert.alert("Success", "Logged in successfully!");
       navigation.replace("TwoStepVerification",{email});
-    // } catch (err) {
-    //   console.log(err)
-    //   Alert.alert("Error", err.response?.data?.error || 'Login failed');
-    // }
+    } catch (err) {
+      console.log(err)
+      Alert.alert("Error", err.response?.data?.error || 'Login failed');
+    }
   };
   const handleForgotPassword = () => {
     navigation.navigate("ForgotPassword"); // Make sure this route exists in your navigator
