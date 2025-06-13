@@ -49,25 +49,25 @@ const TwoStepVerificationScreen = ({ route,navigation }) => {
 
 
     const handleSubmit = async () => {
-      if (code.every(digit => digit !== "") && code.length === CODE_LENGTH) {
-      try{
-        const response = await verifyTwoFACode({ email: email, code: code.join("") });
-      console.log("Verification response:", response);
-      const token = response.token;
-      // Save to AsyncStorage
-      await AsyncStorage.setItem('token', token);
-      console.log(response);
+      // if (code.every(digit => digit !== "") && code.length === CODE_LENGTH) {
+      // try{
+      //   const response = await verifyTwoFACode({ email: email, code: code.join("") });
+      // console.log("Verification response:", response);
+      // const token = response.token;
+      // // Save to AsyncStorage
+      // await AsyncStorage.setItem('token', token);
+      // console.log(response);
      
-      Alert.alert("success","Login Successful !");
+      // Alert.alert("success","Login Successful !");
         navigation.replace("MainApp");
-    } 
-    catch (error) {
-      console.log("Verification Error:", error?.response?.data || error.message || error);
-      Alert.alert("Error", "An error occurred. Please try again.");
-    }
-  }else{
-    Alert.alert("You must fille the 2FA code"); 
-  }
+  //   } 
+  //   catch (error) {
+  //     console.log("Verification Error:", error?.response?.data || error.message || error);
+  //     Alert.alert("Error", "An error occurred. Please try again.");
+  //   }
+  // }else{
+  //   Alert.alert("You must fille the 2FA code"); 
+  // }
 }
     
     
